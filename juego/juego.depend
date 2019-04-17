@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1555165126 source:d:\juego\main.cpp
+	<windows.h>
+	<math.h>
+	<stdlib.h>
+	<stdio.h>
+	<iostream>
+	<vector>
+	<GL/glut.h>
+
+976692172 d:\glut\include\gl\glut.h
+	<windows.h>
+	<GL/gl.h>
+	<GL/glu.h>
+
