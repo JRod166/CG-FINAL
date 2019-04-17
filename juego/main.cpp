@@ -1,5 +1,6 @@
 #define GLUT_DISABLE_ATEXIT_HACK
-#include <windows.h>
+#include <bits/stdc++.h>
+// #include <windows.h> //for windows
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,23 +26,27 @@ GLvoid window_key(unsigned char key, int x, int y);
 //function called on each frame
 GLvoid window_idle();
 
+///extern function for draw and move
+//Funcion quemueve todos los proyectiles del jugador
+void mover_proyectiles();
+void dibujar_proyectiles();
+
+
 ///DECLARACCIONES IMPLICITAS
 class Player;
 class Proyectil;
-class Item;
-class Enemigo;
+//class Item;
+//class Enemigo;
 
 
 ///VARIABLES GLOBALES
 Player *el_jugador;
-vector<Proyectil*> mis_proyectiles;
-vector<Proyectil*> proyectiles_enemigos;
-vector<Item*> items;
-vector<Enemigo*> enemigos;
+vector<Proyectil> mis_proyectiles;
+vector<Proyectil> proyectiles_enemigos;
+//vector<Item> items;
+//vector<Enemigo> enemigos;
 int lim_x = 245;
 int lim_y = 245;
-
-
 
 ///PROYECTILES: comportamiento de estos
 class Proyectil
@@ -49,12 +54,14 @@ class Proyectil
 public:
     pair<int,int> centro; //x,y
     int radio_hitbox;
-    bool es_enemigo;
+    //bool es_enemigo; /// posible comentario
     int tipo; //determina el movimiento del proyectil
     int velocidad;
 
     Proyectil(int x, int y, int tip, bool es_enem);
     void mover();
+    void dibujar();
+    
 };
 
 Proyectil::Proyectil(int x, int y, int tip, bool es_enem)
@@ -72,27 +79,28 @@ Proyectil::Proyectil(int x, int y, int tip, bool es_enem)
 
 void Proyectil::mover()
 {
-    int new_pos = 0;
-    if(tipo==1)
+
+  int new_pos = 0;
+  if(tipo==1)
+  {
+    new_pos =  centro.second + velocidad;
+    if( new_pos < lim_y )
     {
-        new_pos =  centro.second + velocidad;
-        if( new_pos < lim_y )
-        {
-            centro.second = new_pos;
-        }
+      centro.second = new_pos;
     }
+  }
 }
 
-//Funcion quemueve todos los proyectiles del jugador
-void mover_proyectiles()
-{
-    for (vector<int>::iterator it = mis_proyectiles.begin() ; it != mis_proyectiles.end(); ++it)
-    {
-        (*it)->mover();
-    }
+void Proyectil::dibujar() {
+  int x = centro.first, y = centro.second;
+  glBegin(GL_QUADS);
+  glColor3f(1.0f,1.0f,1.0f);
+  glVertex2f(x+radio_hitbox, y-radio_hitbox);
+  glVertex2f(x+radio_hitbox, y+radio_hitbox);
+  glVertex2f(x-radio_hitbox, y+radio_hitbox);
+  glVertex2f(x-radio_hitbox, y-radio_hitbox);
+  glEnd();
 }
-
-
 
 ///PLAYER: Clase que controla al jugador
 class Player
@@ -107,7 +115,7 @@ public:
     Player(int pos_x, int pos_y);
     void mover(int direccion);
     void disparar();
-
+    void dibujar();
 };
 
 //Constructor del jugador
@@ -166,7 +174,18 @@ void Player::mover(int direccion)
 //El jugador dispara un proyectil
 void Player::disparar()
 {
-    mis_proyectiles.push_back(new Proyectil(centro.first,centro.second,1,false));
+  mis_proyectiles.push_back(Proyectil(centro.first,centro.second,1,false));
+}
+
+void Player::dibujar() {
+  int x = centro.first, y = centro.second;
+  glBegin(GL_QUADS);
+  glColor3f(1.0f,0.0f,0.0f);
+  glVertex2f(x+radio_hitbox, y-radio_hitbox);
+  glVertex2f(x+radio_hitbox, y+radio_hitbox);
+  glVertex2f(x-radio_hitbox, y+radio_hitbox);
+  glVertex2f(x-radio_hitbox, y-radio_hitbox);
+  glEnd();
 }
 
 
@@ -186,25 +205,25 @@ GLvoid callback_special(int key, int x, int y)
 	case GLUT_KEY_UP:
 	    //movemos al jugador hacia arriba
 	    el_jugador->mover(1);
-	    glutPostRedisplay();			// et on demande le réaffichage.
+	    glutPostRedisplay();			// et on demande le rï¿½affichage.
 		break;
 
 	case GLUT_KEY_DOWN:
 	    //movemos al jugador hacia abajo
 	    el_jugador->mover(2);
-		glutPostRedisplay();			// et on demande le réaffichage.
+		glutPostRedisplay();			// et on demande le rï¿½affichage.
 		break;
 
 	case GLUT_KEY_LEFT:
 	    //movemos al jugador hacia la izquierda
 	    el_jugador->mover(3);
-		glutPostRedisplay();			// et on demande le réaffichage.
+		glutPostRedisplay();			// et on demande le rï¿½affichage.
 		break;
 
 	case GLUT_KEY_RIGHT:
 	    //movemos al jugador hacia la derecha
 	    el_jugador->mover(4);
-		glutPostRedisplay();			// et on demande le réaffichage.
+		glutPostRedisplay();			// et on demande le rï¿½affichage.
 		break;
 	}
 }
@@ -254,13 +273,12 @@ int main(int argc, char **argv)
 
 	glutDisplayFunc(&window_display);
 
-
-
+	glutKeyboardFunc(&window_key);
 	glutSpecialFunc(&callback_special);
 	glutMouseFunc(&callback_mouse);
 	glutMotionFunc(&callback_motion);
 
-
+	glutIdleFunc(&window_idle);
 
 	glutMainLoop();
 
@@ -309,36 +327,15 @@ GLvoid window_display()
 	int y = el_jugador->centro.second;
 	int radio = el_jugador->radio_hitbox;
 	glBegin(GL_QUADS);
-    glColor3f(1.0f,0.0f,0.0f);
-    glVertex2f(x+radio, y-radio);
-    glVertex2f(x+radio, y+radio);
-    glVertex2f(x-radio, y+radio);
-    glVertex2f(x-radio, y-radio);
-    glEnd();
 
-    //Dibujar_proyectiles
-    for (vector<int>::iterator it = mis_proyectiles.begin() ; it != mis_proyectiles.end(); ++it)
-    {
-        (*it)->mover();
-    }
+  el_jugador -> dibujar();
 
-
-
-
-
-
-
+  //Dibujar_proyectiles
+  dibujar_proyectiles();
 	glutSwapBuffers();
 
 	glFlush();
 }
-
-
-
-
-
-
-
 
 
 
@@ -362,15 +359,42 @@ GLvoid window_key(unsigned char key, int x, int y)
 	case ECHAP:
 		exit(1);
 		break;
-
+  case 'z':
+    el_jugador->disparar();
+    break;
 	default:
 		printf("La touche %d non active.\n", key);
 		break;
 	}
 }
 
+
+
 //function called on each frame
 GLvoid window_idle()
 {
+
+  mover_proyectiles();
+
 	glutPostRedisplay();
+}
+
+//Funcion quemueve todos los proyectiles del jugador
+void mover_proyectiles()
+{
+  for (int i = 0; i < mis_proyectiles.size(); ) {
+    mis_proyectiles[i].mover();
+    if (abs(mis_proyectiles[i].centro.second) >= lim_y - 1) {
+      mis_proyectiles.erase(mis_proyectiles.begin() + i);
+    }
+    else {
+      ++i;
+    }
+  }
+}
+void dibujar_proyectiles()
+{
+  for (int i = 0; i < mis_proyectiles.size(); i++) {
+    mis_proyectiles[i].dibujar();
+  }
 }
