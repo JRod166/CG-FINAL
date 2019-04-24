@@ -48,6 +48,9 @@ vector<Proyectil> proyectiles_enemigos;
 int lim_x = 245;
 int lim_y = 245;
 
+bool available_fire = 1;
+int timer_fire = 0;
+
 ///PROYECTILES: comportamiento de estos
 class Proyectil
 {
@@ -61,7 +64,7 @@ public:
     Proyectil(int x, int y, int tip, bool es_enem);
     void mover();
     void dibujar();
-    
+
 };
 
 Proyectil::Proyectil(int x, int y, int tip, bool es_enem)
@@ -69,7 +72,7 @@ Proyectil::Proyectil(int x, int y, int tip, bool es_enem)
     centro.first = x;
     centro.second = y;
     tipo = tip;
-    es_enemigo = es_enem;
+    //es_enemigo = es_enem;
     if(tipo = 1)
     {
         radio_hitbox = 1;
@@ -199,7 +202,18 @@ void Player::dibujar() {
 ///////////////////////////////////////////////////////////////////////////////
 GLvoid callback_special(int key, int x, int y)
 {
-    glMatrixMode(GL_PROJECTION);
+  int modifier = glutGetModifiers();
+  switch (modifier) {
+    case GLUT_ACTIVE_CTRL:
+    if (available_fire == 1) {
+      el_jugador->disparar();
+      available_fire = 0;
+      timer_fire = 10;
+    }
+    break;
+
+  }
+  glMatrixMode(GL_PROJECTION);
 	switch (key)
 	{
 	case GLUT_KEY_UP:
@@ -225,7 +239,8 @@ GLvoid callback_special(int key, int x, int y)
 	    el_jugador->mover(4);
 		glutPostRedisplay();			// et on demande le r�affichage.
 		break;
-	}
+  }
+
 }
 
 
@@ -250,8 +265,6 @@ GLvoid callback_motion(int x, int y)
     glutPostRedisplay(); //redibujar
 }
 
-
-
 int main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
@@ -274,7 +287,8 @@ int main(int argc, char **argv)
 	glutDisplayFunc(&window_display);
 
 	glutKeyboardFunc(&window_key);
-	glutSpecialFunc(&callback_special);
+  //glutGetModifiers(&callback_modifier);
+  glutSpecialFunc(&callback_special);
 	glutMouseFunc(&callback_mouse);
 	glutMotionFunc(&callback_motion);
 
@@ -359,9 +373,28 @@ GLvoid window_key(unsigned char key, int x, int y)
 	case ECHAP:
 		exit(1);
 		break;
-  case 'z':
+  case GLUT_ACTIVE_CTRL:
+  if (available_fire == 1) {
     el_jugador->disparar();
-    break;
+    available_fire = 0;
+    timer_fire = 10;
+  }
+  break;
+  case 26:
+  if (available_fire == 1) {
+    el_jugador->disparar();
+    available_fire = 0;
+    timer_fire = 10;
+  }
+  break;
+  case 'z':
+  if (available_fire == 1) {
+    el_jugador->disparar();
+    available_fire = 0;
+    timer_fire = 10;
+  }
+  break;
+
 	default:
 		printf("La touche %d non active.\n", key);
 		break;
@@ -373,7 +406,12 @@ GLvoid window_key(unsigned char key, int x, int y)
 //function called on each frame
 GLvoid window_idle()
 {
-
+  if (available_fire == 0) {
+    if (timer_fire == 1) {
+      available_fire = 1;
+    }
+    timer_fire --;
+  }
   mover_proyectiles();
 
 	glutPostRedisplay();
