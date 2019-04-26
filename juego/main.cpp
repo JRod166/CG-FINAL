@@ -406,6 +406,10 @@ GLvoid window_key(unsigned char key, int x, int y)
 //function called on each frame
 GLvoid window_idle()
 {
+  ///vbe vte
+  for (int  i = 0; i < ve.size(); i++) {
+
+  }
   if (available_fire == 0) {
     if (timer_fire == 1) {
       available_fire = 1;
