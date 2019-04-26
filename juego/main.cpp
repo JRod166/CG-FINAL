@@ -1,12 +1,12 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 #include <bits/stdc++.h>
-// #include <windows.h> //for windows
+#include <windows.h> //for windows
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-
+#include <thread>
 #include <GL/glut.h>
 using namespace std;
 
@@ -14,7 +14,6 @@ using namespace std;
 #define GREEN 0
 #define BLUE 0
 #define ALPHA 1
-
 #define ECHAP 27
 void init_scene();
 void render_scene();
@@ -26,75 +25,155 @@ GLvoid window_key(unsigned char key, int x, int y);
 //function called on each frame
 GLvoid window_idle();
 
-///extern function for draw and move
-//Funcion quemueve todos los proyectiles del jugador
-void mover_proyectiles();
+
+//Funcion que dispara la funcion del thread cada cierto intervalo de milisegundos
+void timer_start(std::function<void(void)> func, unsigned int interval)
+{
+    std::thread([func, interval]() {
+        while (true)
+        {
+            func();
+            std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+        }
+    }).detach();
+}
+
+
+
+
+
+///FUNCIONES EXTERNAS PARA MOVER OBJETOS
+void mover_proyectiles(); //funcion quem ueve todos los proyectiles del jugador
 void dibujar_proyectiles();
+void dibujar_enemigos();
+void enemigos_disparan();
+//void mover_enemigos();
 
 
-///DECLARACCIONES IMPLICITAS
-class Player;
-class Proyectil;
-//class Item;
-//class Enemigo;
+///FORWARD DECLARATIONS
+class Player
+{
+public:
+    pair<float,float> centro; //x,y
+    int radio_hitbox;
+    int vidas;
+    int score;
+    float velocidad;
+
+    Player(float pos_x, float pos_y);
+    void mover(int direccion);
+    void disparar();
+    void dibujar();
+};
+
+class Proyectil
+{
+public:
+    pair<float,float> centro; //x,y
+    int radio_hitbox;
+    int tipo; //determina el movimiento del proyectil
+    float velocidad;
+
+    Proyectil(float x, float y, int type);
+    void mover();
+    void dibujar();
+};
+
+class Enemigo
+{
+public:
+    pair<float,float> centro; //x,y
+    int tipo;
+    int radio_hitbox;
+    int vidas;
+    float velocidad;
+
+    Enemigo(float pos_x, float pos_y, int type);
+    void mover(int direccion);
+    void disparar();
+    void dibujar();
+};
 
 
 ///VARIABLES GLOBALES
 Player *el_jugador;
 vector<Proyectil> mis_proyectiles;
 vector<Proyectil> proyectiles_enemigos;
-//vector<Item> items;
-//vector<Enemigo> enemigos;
-int lim_x = 245;
-int lim_y = 245;
+vector<Enemigo> enemigos;
+float lim_x = 245;
+float lim_y = 245;
+
+
 
 ///PROYECTILES: comportamiento de estos
-class Proyectil
-{
-public:
-    pair<int,int> centro; //x,y
-    int radio_hitbox;
-    //bool es_enemigo; /// posible comentario
-    int tipo; //determina el movimiento del proyectil
-    int velocidad;
-
-    Proyectil(int x, int y, int tip, bool es_enem);
-    void mover();
-    void dibujar();
-    
-};
-
-Proyectil::Proyectil(int x, int y, int tip, bool es_enem)
+Proyectil::Proyectil(float x, float y, int type)
 {
     centro.first = x;
     centro.second = y;
-    tipo = tip;
-    es_enemigo = es_enem;
-    if(tipo = 1)
+    tipo = type;
+    if(tipo==1)
     {
         radio_hitbox = 1;
-        velocidad = 2;
+        velocidad = 0.5;
+    }
+    else if(tipo==2)
+    {
+        radio_hitbox = 1;
+        velocidad = 0.05;
+    }
+    else if(tipo==3)
+    {
+        radio_hitbox = 1;
+        velocidad = 0.05;
     }
 }
 
 void Proyectil::mover()
 {
-
-  int new_pos = 0;
+  //proyectiles del jugador
   if(tipo==1)
   {
-    new_pos =  centro.second + velocidad;
-    if( new_pos < lim_y )
-    {
-      centro.second = new_pos;
-    }
+      centro.second = centro.second + velocidad;
+  }
+  //proyectiles de enmigos de tipo 1
+  else if(tipo==2)
+  {
+      centro.second = centro.second - velocidad;
+  }
+  //proyectiles de enmeigos de tipo 3
+  else if(tipo==3)
+  {
+      centro.second = centro.second - velocidad;
+      if(centro.second >= el_jugador->centro.second)
+      {
+          if(centro.first > el_jugador->centro.first) //si el jugador esta hacia la izquierda
+          {
+              centro.first = centro.first - velocidad;
+          }
+          else if(centro.first < el_jugador->centro.first) //si el jugador esta hacia la derecha
+          {
+              centro.first = centro.first + velocidad;
+          }
+      }
   }
 }
 
-void Proyectil::dibujar() {
-  int x = centro.first, y = centro.second;
+void Proyectil::dibujar()
+{
+  float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
-  glColor3f(1.0f,1.0f,1.0f);
+  if(tipo==1)
+  {
+      glColor3f(1.0f,1.0f,1.0f);
+  }
+  else if(tipo==2)
+  {
+      glColor3f(0.0f,1.0f,1.0f);
+  }
+  else if(tipo==3)
+  {
+      glColor3f(0.0f,0.0f,1.0f);
+  }
   glVertex2f(x+radio_hitbox, y-radio_hitbox);
   glVertex2f(x+radio_hitbox, y+radio_hitbox);
   glVertex2f(x-radio_hitbox, y+radio_hitbox);
@@ -102,24 +181,10 @@ void Proyectil::dibujar() {
   glEnd();
 }
 
+
 ///PLAYER: Clase que controla al jugador
-class Player
-{
-public:
-    pair<int,int> centro; //x,y
-    int radio_hitbox;
-    int vidas;
-    int score;
-    int velocidad;
-
-    Player(int pos_x, int pos_y);
-    void mover(int direccion);
-    void disparar();
-    void dibujar();
-};
-
 //Constructor del jugador
-Player::Player(int x, int y)
+Player::Player(float x, float y)
 {
     centro.first = x;
     centro.second = y;
@@ -132,7 +197,7 @@ Player::Player(int x, int y)
 //Funcion de movimiento del personaje del jugador
 void Player::mover(int direccion)
 {
-    int new_pos = 0;
+    float new_pos = 0;
     //Arriba
     if(direccion == 1)
     {
@@ -174,11 +239,12 @@ void Player::mover(int direccion)
 //El jugador dispara un proyectil
 void Player::disparar()
 {
-  mis_proyectiles.push_back(Proyectil(centro.first,centro.second,1,false));
+  mis_proyectiles.push_back(Proyectil(centro.first,centro.second,1));
 }
 
-void Player::dibujar() {
-  int x = centro.first, y = centro.second;
+void Player::dibujar()
+{
+  float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
   glColor3f(1.0f,0.0f,0.0f);
   glVertex2f(x+radio_hitbox, y-radio_hitbox);
@@ -190,8 +256,52 @@ void Player::dibujar() {
 
 
 
+///Enemigo: PLantilla de los enemigos
+//Constructor
+Enemigo::Enemigo(float x, float y, int type)
+{
+    centro.first = x;
+    centro.second = y;
+    tipo = type;
+    if(tipo==2)
+    {
+        radio_hitbox = 3;
+        velocidad = 2;
+        vidas = 1;
+    }
+    else if(tipo==3)
+    {
+        radio_hitbox = 5;
+        velocidad = 5;
+        vidas = 2;
+    }
 
+}
+//El enemigo dispara un proyectil
+void Enemigo::disparar()
+{
+    proyectiles_enemigos.push_back(Proyectil(centro.first,centro.second,tipo));
+}
 
+//Dibujar enemigo
+void Enemigo::dibujar()
+{
+  float x = centro.first, y = centro.second;
+  glBegin(GL_QUADS);
+  if(tipo==2)
+  {
+      glColor3f(0.0f,1.0f,1.0f);
+  }
+  else if(tipo==3)
+  {
+      glColor3f(0.0f,0.0f,1.0f);
+  }
+  glVertex2f(x+radio_hitbox, y-radio_hitbox);
+  glVertex2f(x+radio_hitbox, y+radio_hitbox);
+  glVertex2f(x-radio_hitbox, y+radio_hitbox);
+  glVertex2f(x-radio_hitbox, y-radio_hitbox);
+  glEnd();
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -260,11 +370,21 @@ int main(int argc, char **argv)
 
 	glutInitWindowSize(700, 700);
 	glutInitWindowPosition(0, 0);
-	glutCreateWindow("TP 3 : Transformaciones");
+	glutCreateWindow("Shooter");
 
 
 	///INICIALIZAR EL JUEGO
 	el_jugador = new Player(0,0);
+
+
+	//creamos unos enmigos de prueba
+	enemigos.push_back(Enemigo(100,100,2));
+	enemigos.push_back(Enemigo(0,200,3));
+	//los enemigos disparan cada  segundo
+	timer_start(enemigos_disparan, 1000);
+
+
+
 
 
 	initGL();
@@ -323,15 +443,13 @@ GLvoid window_display()
 
 
 	//Dibujar al jugador
-	int x = el_jugador->centro.first;
-	int y = el_jugador->centro.second;
-	int radio = el_jugador->radio_hitbox;
-	glBegin(GL_QUADS);
+	el_jugador -> dibujar();
 
-  el_jugador -> dibujar();
+	//Dibujamos los enemigos en juegos
+	dibujar_enemigos();
 
-  //Dibujar_proyectiles
-  dibujar_proyectiles();
+	//Dibujar_proyectiles
+	dibujar_proyectiles();
 	glutSwapBuffers();
 
 	glFlush();
@@ -355,14 +473,15 @@ void init_scene()
 
 GLvoid window_key(unsigned char key, int x, int y)
 {
-	switch (key) {
+	switch (key)
+	{
 	case ECHAP:
 		exit(1);
 		break;
-  case 'z':
-    el_jugador->disparar();
-    break;
-	default:
+    case 'z':
+        el_jugador->disparar();
+        break;
+    default:
 		printf("La touche %d non active.\n", key);
 		break;
 	}
@@ -373,28 +492,64 @@ GLvoid window_key(unsigned char key, int x, int y)
 //function called on each frame
 GLvoid window_idle()
 {
-
-  mover_proyectiles();
-
+    mover_proyectiles();
 	glutPostRedisplay();
 }
 
-//Funcion quemueve todos los proyectiles del jugador
+//Funcion que mueve todos los proyectiles del jugador
 void mover_proyectiles()
 {
-  for (int i = 0; i < mis_proyectiles.size(); ) {
-    mis_proyectiles[i].mover();
-    if (abs(mis_proyectiles[i].centro.second) >= lim_y - 1) {
-      mis_proyectiles.erase(mis_proyectiles.begin() + i);
+    for (int i = 0; i < mis_proyectiles.size();)
+    {
+        mis_proyectiles[i].mover();
+        if( abs(mis_proyectiles[i].centro.second) >= lim_y)
+        {
+            mis_proyectiles.erase(mis_proyectiles.begin() + i);
+        }
+        else
+        {
+            ++i;
+        }
     }
-    else {
-      ++i;
-    }
+  for(int i=0; i<proyectiles_enemigos.size(); )
+  {
+      proyectiles_enemigos[i].mover();
+      if( abs(proyectiles_enemigos[i].centro.second)>=lim_y || abs(proyectiles_enemigos[i].centro.second)>=lim_x )
+      {
+          proyectiles_enemigos.erase(proyectiles_enemigos.begin()+i);
+      }
+      else
+      {
+          ++i;
+      }
   }
 }
+
+//Dibuja todos los proyectiles en juego
 void dibujar_proyectiles()
 {
   for (int i = 0; i < mis_proyectiles.size(); i++) {
     mis_proyectiles[i].dibujar();
   }
+  for (int i = 0; i < proyectiles_enemigos.size(); i++) {
+    proyectiles_enemigos[i].dibujar();
+  }
+}
+
+//Dibuja todos los enemigos en juego
+void dibujar_enemigos()
+{
+  for(int i=0; i<enemigos.size(); i++)
+  {
+      enemigos[i].dibujar();
+  }
+}
+
+//Ordena a todos los enemigos que disparen
+void enemigos_disparan()
+{
+    for(int i=0; i<enemigos.size(); i++)
+    {
+        enemigos[i].disparar();
+    }
 }
