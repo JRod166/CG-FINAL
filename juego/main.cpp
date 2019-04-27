@@ -40,13 +40,12 @@ void timer_start(std::function<void(void)> func, unsigned int interval)
 
 
 
-
-<<<<<<< HEAD
 bool available_fire = 1;
 int timer_fire = 0;
-
+float default_guided_lifetime = 30;
+float delay_time;
 ///PROYECTILES: comportamiento de estos
-=======
+//=======
 
 ///FUNCIONES EXTERNAS PARA MOVER OBJETOS
 void mover_proyectiles(); //funcion quem ueve todos los proyectiles del jugador
@@ -72,7 +71,7 @@ public:
     void dibujar();
 };
 
->>>>>>> Luis
+//>>>>>>> Luis
 class Proyectil
 {
 public:
@@ -80,14 +79,15 @@ public:
     int radio_hitbox;
     int tipo; //determina el movimiento del proyectil
     float velocidad;
-
+    float guided_lifetime; ////tiempo guiado
+    pair<float,float> direccion;
     Proyectil(float x, float y, int type);
     void mover();
     void dibujar();
-<<<<<<< HEAD
+//<<<<<<< HEAD
 
-=======
->>>>>>> Luis
+//=======
+//>>>>>>> Luis
 };
 
 class Enemigo
@@ -121,27 +121,30 @@ Proyectil::Proyectil(float x, float y, int type)
 {
     centro.first = x;
     centro.second = y;
-<<<<<<< HEAD
-    tipo = tip;
-    //es_enemigo = es_enem;
-    if(tipo = 1)
-=======
     tipo = type;
     if(tipo==1)
->>>>>>> Luis
+//>>>>>>> Luis
     {
-        radio_hitbox = 1;
-        velocidad = 0.5;
+      radio_hitbox = 1; /// puede cambiar
+        velocidad = 3;
     }
     else if(tipo==2)
     {
         radio_hitbox = 1;
-        velocidad = 0.05;
+        velocidad = 3;
     }
     else if(tipo==3)
     {
         radio_hitbox = 1;
-        velocidad = 0.05;
+        velocidad = 3;
+        direccion.first = el_jugador->centro.first - x;
+        direccion.second = el_jugador->centro.second - y;
+    }
+    else if (tipo == 4) {
+      radio_hitbox = 1;
+      velocidad = 3;
+      direccion.first = el_jugador->centro.first - x;
+      direccion.second = el_jugador->centro.second - y;
     }
 }
 
@@ -160,8 +163,10 @@ void Proyectil::mover()
   //proyectiles de enmeigos de tipo 3
   else if(tipo==3)
   {
-      centro.second = centro.second - velocidad;
-      if(centro.second >= el_jugador->centro.second)
+      centro.second = centro.second + velocidad * direccion.second / 750;
+      centro.first = centro.first + velocidad * direccion.first / 750;
+      /*
+      if(centro.second >= el_jugador->centro.second  & guided_lifetime > 0)
       {
           if(centro.first > el_jugador->centro.first) //si el jugador esta hacia la izquierda
           {
@@ -171,7 +176,14 @@ void Proyectil::mover()
           {
               centro.first = centro.first + velocidad;
           }
+          guided_lifetime-=default_guided_lifetime / 20;
       }
+      */
+  }
+  else if (tipo == 4) {
+    pair<float, float> new_direction;
+    float dist;
+    
   }
 }
 
@@ -326,6 +338,7 @@ void Enemigo::dibujar()
 ///////////////////////////////////////////////////////////////////////////////
 GLvoid callback_special(int key, int x, int y)
 {
+  glMatrixMode(GL_PROJECTION);
   int modifier = glutGetModifiers();
   switch (modifier) {
     case GLUT_ACTIVE_CTRL:
@@ -335,10 +348,8 @@ GLvoid callback_special(int key, int x, int y)
       timer_fire = 10;
     }
     break;
-
   }
-  glMatrixMode(GL_PROJECTION);
-	switch (key)
+  switch (key)
 	{
 	case GLUT_KEY_UP:
 	    //movemos al jugador hacia arriba
@@ -461,6 +472,7 @@ GLvoid initGL()
 ///FUNCION QUE DIBUJA LA PANTALLA
 GLvoid window_display()
 {
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
@@ -468,6 +480,11 @@ GLvoid window_display()
 	glOrtho(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
 	gluPerspective(45.0, 1.0, 1.0, 100.0);
 	glTranslatef(0.0f, 0.0f, -30.0f);
+  //////movement
+  time_p = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
+  delay_time = float(time_p -timebase)/1000.0;// delta time
+  timebase = time_p;
+
 
 
 	//Dibujar al jugador
@@ -506,7 +523,7 @@ GLvoid window_key(unsigned char key, int x, int y)
 	case ECHAP:
 		exit(1);
 		break;
-<<<<<<< HEAD
+//<<<<<<< HEAD
   case GLUT_ACTIVE_CTRL:
   if (available_fire == 1) {
     el_jugador->disparar();
@@ -528,14 +545,7 @@ GLvoid window_key(unsigned char key, int x, int y)
     timer_fire = 10;
   }
   break;
-
 	default:
-=======
-    case 'z':
-        el_jugador->disparar();
-        break;
-    default:
->>>>>>> Luis
 		printf("La touche %d non active.\n", key);
 		break;
 	}
@@ -546,11 +556,7 @@ GLvoid window_key(unsigned char key, int x, int y)
 //function called on each frame
 GLvoid window_idle()
 {
-<<<<<<< HEAD
-  ///vbe vte
-  for (int  i = 0; i < ve.size(); i++) {
-
-  }
+//<<<<<<< HEAD
   if (available_fire == 0) {
     if (timer_fire == 1) {
       available_fire = 1;
@@ -559,9 +565,6 @@ GLvoid window_idle()
   }
   mover_proyectiles();
 
-=======
-    mover_proyectiles();
->>>>>>> Luis
 	glutPostRedisplay();
 }
 
