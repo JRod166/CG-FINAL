@@ -44,6 +44,10 @@ bool available_fire = 1;
 int timer_fire = 0;
 float default_guided_lifetime = 30;
 float delay_time;
+float time_p;
+float timebase;
+float closer_distance = 20;
+
 ///PROYECTILES: comportamiento de estos
 //=======
 
@@ -77,9 +81,10 @@ class Proyectil
 public:
     pair<float,float> centro; //x,y
     int radio_hitbox;
+    bool guided;
     int tipo; //determina el movimiento del proyectil
     float velocidad;
-    float guided_lifetime; ////tiempo guiado
+    //float guided_lifetime; ////tiempo guiado opcional
     pair<float,float> direccion;
     Proyectil(float x, float y, int type);
     void mover();
@@ -114,7 +119,13 @@ vector<Enemigo> enemigos;
 float lim_x = 245;
 float lim_y = 245;
 
+float calc_distance(pair<float, float> a) {
+  return sqrt(pow(a.first, 2) + pow(a.second, 2));
+}
 
+float calc_distance(pair<float, float> a, pair<float, float> b) {
+  return sqrt(pow(a.first - b.first, 2) + pow(a.second - b.second, 2));
+}
 
 ///PROYECTILES: comportamiento de estos
 Proyectil::Proyectil(float x, float y, int type)
@@ -136,15 +147,23 @@ Proyectil::Proyectil(float x, float y, int type)
     else if(tipo==3)
     {
         radio_hitbox = 1;
-        velocidad = 3;
+        velocidad = 0.5;
         direccion.first = el_jugador->centro.first - x;
         direccion.second = el_jugador->centro.second - y;
+        float dist = calc_distance(direccion);
+        //cout << temp << endl;
+        direccion.first /= dist;
+        direccion.second /= dist;
     }
     else if (tipo == 4) {
       radio_hitbox = 1;
       velocidad = 3;
       direccion.first = el_jugador->centro.first - x;
       direccion.second = el_jugador->centro.second - y;
+      float dist = calc_distance(direccion);
+      //cout << temp << endl;
+      direccion.first /= dist;
+      direccion.second /= dist;
     }
 }
 
@@ -163,8 +182,8 @@ void Proyectil::mover()
   //proyectiles de enmeigos de tipo 3
   else if(tipo==3)
   {
-      centro.second = centro.second + velocidad * direccion.second / 750;
-      centro.first = centro.first + velocidad * direccion.first / 750;
+    centro.first = centro.first + direccion.first / velocidad;
+    centro.second = centro.second + direccion.second / velocidad;
       /*
       if(centro.second >= el_jugador->centro.second  & guided_lifetime > 0)
       {
@@ -181,9 +200,22 @@ void Proyectil::mover()
       */
   }
   else if (tipo == 4) {
-    pair<float, float> new_direction;
-    float dist;
-    
+    if (guided == 1) {
+      pair<float, float> new_direction, pos;
+      pos.first = x;
+      pos.second = y;
+      direccion.first -= el_jugador->centro.first;
+      direccion.second -= el_jugador->centro.second;
+      float dist = calc_distance(direccion);
+      //cout << temp << endl;
+      direccion.first /= dist;
+      direccion.second /= dist;
+      if (closer_distance > dist) {
+        guided = 0;
+      }
+    }
+    centro.first = centro.first + direccion.first / velocidad;
+    centro.second = centro.second + direccion.second / velocidad;
   }
 }
 
