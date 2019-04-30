@@ -1,6 +1,6 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 #include <bits/stdc++.h>
-//#include <windows.h> //for windows
+#include <windows.h> //for windows
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,7 +21,6 @@ GLvoid initGL();
 GLvoid window_display();
 GLvoid window_reshape(GLsizei width, GLsizei height);
 GLvoid window_key(unsigned char key, int x, int y);
-
 //function called on each frame
 GLvoid window_idle();
 
@@ -38,7 +37,11 @@ void timer_start(std::function<void(void)> func, unsigned int interval)
     }).detach();
 }
 
-
+//Funcion que recibe un vector de 2 dimensiones y retorna su normal
+float normal_vector(float x, float y)
+{
+    return sqrt( pow(x,2) + pow(y,2) );
+}
 
 
 
@@ -61,7 +64,7 @@ public:
     float velocidad;
 
     Player(float pos_x, float pos_y);
-    void mover(int direccion);
+    void mover();
     void disparar();
     void dibujar();
 };
@@ -73,7 +76,7 @@ public:
     int radio_hitbox;
     int tipo; //determina el movimiento del proyectil
     float velocidad;
-
+    pair<float,float> direccion;
     Proyectil(float x, float y, int type);
     void mover();
     void dibujar();
@@ -102,6 +105,18 @@ vector<Proyectil> proyectiles_enemigos;
 vector<Enemigo> enemigos;
 float lim_x = 245;
 float lim_y = 245;
+int time_p = 0;
+int timebase = 0;
+int reload_time = 0;
+float default_guided_lifetime = 30;
+float delay_time = 1;
+//Estado de las teclas(presionada o no)
+bool up_pressed = false;
+bool down_pressed = false;
+bool left_pressed = false;
+bool right_pressed = false;
+bool fire_pressed = false;
+
 
 
 
@@ -111,20 +126,30 @@ Proyectil::Proyectil(float x, float y, int type)
     centro.first = x;
     centro.second = y;
     tipo = type;
-    if(tipo==1)
+    direccion = make_pair(0,0);
+    if(tipo==1) //proyectiles del jugador
     {
-        radio_hitbox = 1;
-        velocidad = 0.5;
+      radio_hitbox = 1;
+        velocidad = 150;
     }
-    else if(tipo==2)
+    else if(tipo==2) //proyectiles de enmigos tipo 2
     {
         radio_hitbox = 1;
-        velocidad = 0.05;
+        velocidad = 50;
     }
-    else if(tipo==3)
+    else if(tipo==3) //proyectiles de enemigos tipo 3
     {
         radio_hitbox = 1;
-        velocidad = 0.05;
+        velocidad = 100;
+        direccion.first = el_jugador->centro.first - x;
+        direccion.second = el_jugador->centro.second - y;
+    }
+    else if (tipo == 4) //proyectiles enemigos de tipo 4
+    {
+      radio_hitbox = 1;
+      velocidad = 150;
+      direccion.first = el_jugador->centro.first - x;
+      direccion.second = el_jugador->centro.second - y;
     }
 }
 
@@ -133,28 +158,37 @@ void Proyectil::mover()
   //proyectiles del jugador
   if(tipo==1)
   {
-      centro.second = centro.second + velocidad;
+      centro.second += velocidad * delay_time;
   }
   //proyectiles de enmigos de tipo 1
   else if(tipo==2)
   {
-      centro.second = centro.second - velocidad;
+      centro.second -= velocidad * delay_time;
   }
-  //proyectiles de enmeigos de tipo 3
+  //proyectiles de enemigos de tipo 3
   else if(tipo==3)
   {
-      centro.second = centro.second - velocidad;
-      if(centro.second >= el_jugador->centro.second)
+      float normal = normal_vector( direccion.first , direccion.second );
+      centro.first += velocidad * direccion.first * delay_time / normal;
+      centro.second += velocidad * direccion.second * delay_time / normal;
+  }
+  //proyectiles de enmigos de tipo 4
+  else if(tipo == 4)
+  {
+      float dist_x = el_jugador->centro.first - centro.first;
+      float dist_y = el_jugador->centro.second - centro.second;
+      float normal = normal_vector( dist_x , dist_y );
+      if( normal > 30) //si esta mas de 20 de distancia, persiguen al jugador
       {
-          if(centro.first > el_jugador->centro.first) //si el jugador esta hacia la izquierda
-          {
-              centro.first = centro.first - velocidad;
-          }
-          else if(centro.first < el_jugador->centro.first) //si el jugador esta hacia la derecha
-          {
-              centro.first = centro.first + velocidad;
-          }
+          direccion.first = dist_x;
+          direccion.second = dist_y;
       }
+      else //si no, dejan de perseguir y se vuelven de tipo 3
+      {
+          tipo = 3;
+      }
+      centro.second = centro.second + (velocidad * direccion.second * delay_time / normal);
+      centro.first = centro.first + (velocidad * direccion.first * delay_time / normal);
   }
 }
 
@@ -172,7 +206,11 @@ void Proyectil::dibujar()
   }
   else if(tipo==3)
   {
-      glColor3f(0.0f,0.0f,1.0f);
+      glColor3f(1.0f,1.0f,0.0f);
+  }
+  else if(tipo==4)
+  {
+      glColor3f(0.0f,1.0f,0.0f);
   }
   glVertex2f(x+radio_hitbox, y-radio_hitbox);
   glVertex2f(x+radio_hitbox, y+radio_hitbox);
@@ -189,46 +227,46 @@ Player::Player(float x, float y)
     centro.first = x;
     centro.second = y;
     radio_hitbox = 3;
-    velocidad = 4;
+    velocidad = 100;
     vidas = 3;
     score = 0;
 }
 
 //Funcion de movimiento del personaje del jugador
-void Player::mover(int direccion)
+void Player::mover()
 {
     float new_pos = 0;
     //Arriba
-    if(direccion == 1)
+    if(up_pressed == true)
     {
-        new_pos =  centro.second + velocidad;
+        new_pos =  centro.second + (velocidad * delay_time);
         if( new_pos < lim_y )
         {
             centro.second = new_pos;
         }
     }
     //Abajo
-    else if(direccion == 2)
+    if(down_pressed == true)
     {
-        new_pos =  centro.second - velocidad;
+        new_pos =  centro.second - (velocidad * delay_time);
         if( new_pos > -(lim_y) )
         {
             centro.second = new_pos;
         }
     }
     //Izquierda
-    else if(direccion == 3)
+    if(left_pressed == true)
     {
-        new_pos =  centro.first - velocidad;
+        new_pos =  centro.first - (velocidad * delay_time);
         if( new_pos > -(lim_x) )
         {
             centro.first = new_pos;
         }
     }
     //Derecha
-    else if(direccion == 4)
+    if(right_pressed == true)
     {
-        new_pos =  centro.first + velocidad;
+        new_pos =  centro.first + (velocidad * delay_time);
         if( new_pos < lim_x )
         {
             centro.first = new_pos;
@@ -236,10 +274,10 @@ void Player::mover(int direccion)
     }
 }
 
-//El jugador dispara un proyectil
+//El jugador dispara municiones
 void Player::disparar()
 {
-  mis_proyectiles.push_back(Proyectil(centro.first,centro.second,1));
+    mis_proyectiles.push_back(Proyectil(centro.first,centro.second,1));
 }
 
 void Player::dibujar()
@@ -266,14 +304,20 @@ Enemigo::Enemigo(float x, float y, int type)
     if(tipo==2)
     {
         radio_hitbox = 3;
-        velocidad = 2;
+        velocidad = 50;
         vidas = 1;
     }
     else if(tipo==3)
     {
         radio_hitbox = 5;
-        velocidad = 5;
+        velocidad = 50;
         vidas = 2;
+    }
+    else if(tipo==4)
+    {
+        radio_hitbox = 10;
+        velocidad = 50;
+        vidas = 3;
     }
 
 }
@@ -294,7 +338,11 @@ void Enemigo::dibujar()
   }
   else if(tipo==3)
   {
-      glColor3f(0.0f,0.0f,1.0f);
+      glColor3f(1.0f,1.0f,0.0f);
+  }
+  else if(tipo==4)
+  {
+      glColor3f(0.0f,1.0f,0.0f);
   }
   glVertex2f(x+radio_hitbox, y-radio_hitbox);
   glVertex2f(x+radio_hitbox, y+radio_hitbox);
@@ -304,63 +352,96 @@ void Enemigo::dibujar()
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-//(1)
-///////////////////////////////////////////////////////////////////////////////
+///CUANDO SE PRESIONA UNA TECLA DE MOVIMIENTO
 GLvoid callback_special(int key, int x, int y)
 {
-    glMatrixMode(GL_PROJECTION);
-	switch (key)
-	{
-	case GLUT_KEY_UP:
-	    //movemos al jugador hacia arriba
-	    el_jugador->mover(1);
-	    glutPostRedisplay();			// et on demande le r�affichage.
-		break;
-
-	case GLUT_KEY_DOWN:
-	    //movemos al jugador hacia abajo
-	    el_jugador->mover(2);
-		glutPostRedisplay();			// et on demande le r�affichage.
-		break;
-
-	case GLUT_KEY_LEFT:
-	    //movemos al jugador hacia la izquierda
-	    el_jugador->mover(3);
-		glutPostRedisplay();			// et on demande le r�affichage.
-		break;
-
-	case GLUT_KEY_RIGHT:
-	    //movemos al jugador hacia la derecha
-	    el_jugador->mover(4);
-		glutPostRedisplay();			// et on demande le r�affichage.
-		break;
-	}
+  glMatrixMode(GL_PROJECTION);
+  if( key == GLUT_KEY_UP)
+  {
+      //movemos al jugador hacia arriba
+      up_pressed = true;
+      glutPostRedisplay();			// et on demande le r�affichage.
+  }
+  if( key == GLUT_KEY_DOWN )
+  {
+      //movemos al jugador hacia abajo
+      down_pressed = true;
+      glutPostRedisplay();
+  }
+  if( key == GLUT_KEY_LEFT )
+  {
+      //movemos al jugador hacia la izquierda
+      left_pressed = true;
+      glutPostRedisplay();
+  }
+  if( key == GLUT_KEY_RIGHT )
+  {
+      //movemos al jugador hacia la derecha
+	    right_pressed = true;
+		glutPostRedisplay();
+  }
 }
 
+///CUANDO SE DEJA DE PRESIONAR UNA TECLA DE MOVIMIENTO
+GLvoid callback_specialUp(int key, int x, int y)
+{
+  glMatrixMode(GL_PROJECTION);
+  if( key == GLUT_KEY_UP)
+  {
+      //se detiene el movimiento hacia arriba
+      up_pressed = false;
+      glutPostRedisplay();
+  }
+  if( key == GLUT_KEY_DOWN )
+  {
+      //se detiene el movimiento hacia abajo
+      down_pressed = false;
+      glutPostRedisplay();
+  }
+  if( key == GLUT_KEY_LEFT )
+  {
+      //se detiene el movimiento hacia la izquierda
+      left_pressed =false;
+      glutPostRedisplay();
+  }
+  if( key == GLUT_KEY_RIGHT )
+  {
+      //se detiene el movimiento hacia la derecha
+      right_pressed = false;
+      glutPostRedisplay();
+  }
+}
 
+///CUANDO SE PRESIONA UNA TECLA DE DISPARO
+GLvoid window_key(unsigned char key, int x, int y)
+{
+    if( key == 'z')
+    {
+        fire_pressed = true;
+    }
+}
 
-///////////////////////////////////////////////////////////////////////////////
-//(2)
-///////////////////////////////////////////////////////////////////////////////
+///CUANDO SE DEJA DE PRESIONA LA TECLA DE DISPARO
+GLvoid window_keyUp(unsigned char key, int x, int y)
+{
+    if( key == 'z')
+    {
+        fire_pressed = false;
+    }
+}
+
 GLvoid callback_mouse(int button, int state, int x, int y)
 {
     if (state == GLUT_DOWN && button == GLUT_LEFT_BUTTON)
 	{
 
 	}
-
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//(3)
-///////////////////////////////////////////////////////////////////////////////
 GLvoid callback_motion(int x, int y)
 {
     glutPostRedisplay(); //redibujar
 }
-
-
 
 int main(int argc, char **argv)
 {
@@ -378,8 +459,9 @@ int main(int argc, char **argv)
 
 
 	//creamos unos enmigos de prueba
-	enemigos.push_back(Enemigo(100,100,2));
-	enemigos.push_back(Enemigo(0,200,3));
+	enemigos.push_back(Enemigo(0,100,2));
+	enemigos.push_back(Enemigo(-100,200,3));
+	enemigos.push_back(Enemigo(100,100,4));
 	//los enemigos disparan cada  segundo
 	timer_start(enemigos_disparan, 1000);
 
@@ -394,7 +476,10 @@ int main(int argc, char **argv)
 	glutDisplayFunc(&window_display);
 
 	glutKeyboardFunc(&window_key);
-	glutSpecialFunc(&callback_special);
+	glutKeyboardUpFunc(&window_keyUp);
+
+    glutSpecialFunc(&callback_special);
+    glutSpecialUpFunc(&callback_specialUp);
 	glutMouseFunc(&callback_mouse);
 	glutMotionFunc(&callback_motion);
 
@@ -433,6 +518,7 @@ GLvoid initGL()
 ///FUNCION QUE DIBUJA LA PANTALLA
 GLvoid window_display()
 {
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
@@ -440,9 +526,14 @@ GLvoid window_display()
 	glOrtho(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
 	gluPerspective(45.0, 1.0, 1.0, 100.0);
 	glTranslatef(0.0f, 0.0f, -30.0f);
+	//Calculamos la velocidad de los frames
+	time_p = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
+	delay_time = float(time_p -timebase)/1000.0;// delta time
+	timebase = time_p;
 
 
 	//Dibujar al jugador
+	el_jugador->mover();
 	el_jugador -> dibujar();
 
 	//Dibujamos los enemigos en juegos
@@ -471,29 +562,26 @@ void init_scene()
 
 }
 
-GLvoid window_key(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-	case ECHAP:
-		exit(1);
-		break;
-    case 'z':
-        el_jugador->disparar();
-        break;
-    default:
-		printf("La touche %d non active.\n", key);
-		break;
-	}
-}
 
 
-
-//function called on each frame
+//Function called on each frame
 GLvoid window_idle()
 {
+    //Para disparar, se requiere una recarga de 10 ciclos
+    if( fire_pressed == true)
+    {
+        if(reload_time == 0)
+        {
+            el_jugador->disparar();
+            reload_time = 100;
+        }
+        else
+        {
+            reload_time--;
+        }
+    }
     mover_proyectiles();
-	glutPostRedisplay();
+    glutPostRedisplay();
 }
 
 //Funcion que mueve todos los proyectiles del jugador
