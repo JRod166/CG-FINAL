@@ -1,6 +1,6 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 #include <bits/stdc++.h>
-#include <windows.h> //for windows
+//#include <windows.h> //for windows
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
