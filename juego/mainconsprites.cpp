@@ -459,6 +459,7 @@ void dibujar_enemigos()
 {
   for(int i=0; i<enemigos.size(); i++)
   {
+      enemigos[i].mover(el_jugador->centro.first, el_jugador->centro.second);
       enemigos[i].dibujar(enemigosstate[i].first);
   }
 }

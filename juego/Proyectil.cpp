@@ -55,7 +55,7 @@ void Proyectil::mover(float x, float y)
       float dist_x = x - centro.first;
       float dist_y = y - centro.second;
       float normal = normal_vector( dist_x , dist_y );
-      if( normal > 30) //si esta mas de 20 de distancia, persiguen al jugador
+      if( normal > 100) //si esta mas de 20 de distancia, persiguen al jugador
       {
           direccion.first = dist_x;
           direccion.second = dist_y;

@@ -8,25 +8,28 @@ Enemigo::Enemigo(float x, float y, int type)
     centro.first = x;
     centro.second = y;
     tipo = type;
+    r = 99;
+    ii = 0; // ii is the pos of the enemy based on a circle
     if(tipo==2)
     {
         radio_hitbox = 3;
-        velocidad = 50;
         vidas = 1;
     }
     else if(tipo==3)
     {
         radio_hitbox = 5;
-        velocidad = 50;
         vidas = 2;
     }
     else if(tipo==4)
     {
         radio_hitbox = 10;
-        velocidad = 50;
         vidas = 3;
     }
-
+    else if(tipo == 5){
+      radio_hitbox = 5;
+      vidas = 5;
+    }
+    velocidad = 15;
 }
 //El enemigo dispara un proyectil
 Proyectil Enemigo::disparar()
@@ -54,4 +57,70 @@ void Enemigo::dibujar(int state)
   glVertex3f(x-radio_hitbox*3, y-radio_hitbox*3,1); //bottom-left
   glEnd();
   glDisable(GL_BLEND);
+}
+
+///Mover enemigos
+void Enemigo::mover(float x, float y) {
+  if(tipo==1)
+  {
+      centro.first += velocidad * delay_time;
+  }
+  else if(tipo==2)
+  {
+      centro.first -= velocidad * delay_time;
+
+  }
+  else if(tipo==3)
+  {
+    int num_segments = 360;
+    float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
+    float x = r * cosf(theta);//calculate the x component
+    float y = r * sinf(theta);//calculate the y component
+    centro.first = x; // x + 0
+    centro.second = 350 - y; // top looping
+    ii++;
+  }
+  else if(tipo == 4)
+  {
+    int num_segments = 360;
+    float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
+    float x = r * cosf(theta);//calculate the x component
+    float y = r * sinf(theta);//calculate the y component
+    centro.first = x; // x + 0
+    centro.second = 350 + y; // top looping
+    ii++;
+  }
+  else if(tipo == 5) {
+    float dist_x = x - centro.first;
+    float dist_y = y - centro.second;
+    float normal = normal_vector( dist_x , dist_y );
+    pair<float, float> direccion;
+    if( normal > 100) //si esta mas de 20 de distancia, persiguen al jugador
+    {
+        direccion.first = dist_x;
+        direccion.second = dist_y;
+    }
+    else //si no, dejan de perseguir y se vuelven de tipo 3
+    {
+        tipo = 6;
+    }
+    centro.second = centro.second + (velocidad * direccion.second * delay_time / normal);
+    centro.first = centro.first + (velocidad * direccion.first * delay_time / normal);
+  }
+  else if (tipo == 6) {
+    int num_segments = 360;
+    float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
+    float x = r * cosf(theta);//calculate the x component
+    float y = r * sinf(theta);//calculate the y component
+    centro.first += x; // x + 0
+    centro.second +=  + y; // top looping
+    ii++;
+    float dist_x = x - centro.first;
+    float dist_y = y - centro.second;
+    float normal = normal_vector( dist_x , dist_y );
+    if (normal > 100) {
+      ii = 0;
+      tipo = 5;
+    }
+  }
 }
