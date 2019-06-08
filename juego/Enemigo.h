@@ -12,8 +12,9 @@ public:
     int radio_hitbox;
     int vidas;
     float velocidad;
-    int ii;
+    float ii;
     float r;
+    int state;
     Enemigo(float pos_x, float pos_y, int type);
     void mover(pair<float, float> pos_player); //x and y == pos player
     Proyectil disparar();

@@ -78,7 +78,7 @@ void Enemigo::mover(pair<float, float> pos_player) {
     float y = r * sinf(theta);//calculate the y component
     centro.first = origen.first + x; // x + 0
     centro.second = origen.second + y; // top looping
-    ii++;
+    ii+=delay_time*velocidad;
   }
   else if(tipo == 4)
   {
@@ -88,7 +88,7 @@ void Enemigo::mover(pair<float, float> pos_player) {
     float y = r * sinf(theta);//calculate the y component
     centro.first = origen.first - x; // x + 0
     centro.second = origen.second + y; // top looping
-    ii++;
+    ii+=delay_time*velocidad;
   }
   else if(tipo == 5) {
     float dist_x = pos_player.first - centro.first;
