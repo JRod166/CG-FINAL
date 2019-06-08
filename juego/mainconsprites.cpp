@@ -347,7 +347,10 @@ GLvoid window_display()
   ////parte movible
   check_collisions();
   check_dead_enemies();
-
+  if (player_is_alive() == 0) {
+    cout << "game over" << endl;
+  }
+  //drawGameStats();
 	//Dibujar al jugador
 	el_jugador->mover();
 	el_jugador -> dibujar();
@@ -523,12 +526,12 @@ void check_collisions()
 	for (int i = 0; i < proyectiles_enemigos.size(); i++)
 	{
 		distancia_entre_centros = distancia( proyectiles_enemigos[i].centro, el_jugador->centro );
-		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) / 2 )
+		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) / 1.2 )
 		{
 			el_jugador->vidas--; //el jugador pierde una vida
 			cout<<"El jugador ha perdido una vida.";
-			proyectiles_enemigos.erase( proyectiles_enemigos.begin()+i ); //destruir proyectil
-			//proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
+			//proyectiles_enemigos.erase( proyectiles_enemigos.begin()+i ); //destruir proyectil
+			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
 			i = proyectiles_enemigos.size(); //termina el bucle
 		}
 	}
@@ -538,7 +541,7 @@ void check_collisions()
 		for(int j = 0; j < mis_proyectiles.size(); j++)
 		{
 			distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
-			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) / 2 )
+			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) / 1.2 )
 			{
 				enemigos[i].vidas--; //el enemigo pierde una vida
 				mis_proyectiles.erase( mis_proyectiles.begin()+j ); //destruir proyectil
