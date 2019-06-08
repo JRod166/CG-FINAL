@@ -10,6 +10,8 @@ using namespace std;
 #define BLUE 0
 #define ALPHA 1
 #define ECHAP 27
+#define WINWIDTH 700
+#define CIRCLE_SEGMENTS 20
 void init_scene();
 void render_scene();
 GLvoid initGL();
@@ -18,7 +20,14 @@ GLvoid window_reshape(GLsizei width, GLsizei height);
 GLvoid window_key(unsigned char key, int x, int y);
 //function called on each frame
 GLvoid window_idle();
+///Luis functions
 
+void drawLife(float x, float y);
+float distancia(pair<float,float> p1, pair<float,float> p2);
+void check_collisions();    ///1
+bool player_is_alive();     //future work
+void drawGameStats();
+void check_dead_enemies();    ///2
 
 //Funcion que dispara la funcion del thread cada cierto intervalo de milisegundos
 void timer_start(std::function<void(void)> func, unsigned int interval)
@@ -335,15 +344,22 @@ GLvoid window_display()
   glEnd();
   glPopMatrix();
 
+  ////parte movible
+  check_collisions();
+  check_dead_enemies();
+  if (player_is_alive() == 0) {
+    cout << "game over" << endl;
+  }
+  //drawGameStats();
 	//Dibujar al jugador
 	el_jugador->mover();
 	el_jugador -> dibujar();
 
 	//Dibujamos los enemigos en juegos
+  dibujar_proyectiles();
 	dibujar_enemigos();
 
 	//Dibujar_proyectiles
-	dibujar_proyectiles();
 	glutSwapBuffers();
 
 	glFlush();
@@ -403,7 +419,7 @@ GLvoid window_idle()
             mis_proyectiles.push_back(el_jugador->disparar());
             reimustate=1;
             reimu_time=5;
-            reload_time = 100;
+            reload_time = 7;
         }
         else
         {
@@ -457,9 +473,16 @@ void dibujar_proyectiles()
 //Dibuja todos los enemigos en juego
 void dibujar_enemigos()
 {
-  for(int i=0; i<enemigos.size(); i++)
+  for(int i=0; i<enemigos.size(); )
   {
+      enemigos[i].mover(el_jugador->centro);
       enemigos[i].dibujar(enemigosstate[i].first);
+      if (normal_vector(enemigos[i].centro.first, enemigos[i].centro.second) >= 1000.0) {
+        enemigos.erase(enemigos.begin() + i);
+      }
+      else {
+        ++i;
+      }
   }
 }
 
@@ -480,4 +503,106 @@ void enemigos_disparan()
           proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
         }
     }
+}
+
+
+
+
+
+
+//Funcion auxiliar para check_collisions: Retorna la distancia vectorial entre dos puntos
+float distancia(pair<float,float> p1, pair<float,float> p2)
+{
+	return sqrt( abs(p1.first-p2.first) + abs(p1.second-p2.second) );
+}
+
+
+
+//Aplica las leyes de choque entre objetos
+void check_collisions()
+{
+	float distancia_entre_centros = 0;
+    //Revisamos si el jugador se ha chocado con un proyectil enemigo
+	for (int i = 0; i < proyectiles_enemigos.size(); i++)
+	{
+		distancia_entre_centros = distancia( proyectiles_enemigos[i].centro, el_jugador->centro );
+		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) / 1.2 )
+		{
+			el_jugador->vidas--; //el jugador pierde una vida
+			cout<<"El jugador ha perdido una vida.";
+			//proyectiles_enemigos.erase( proyectiles_enemigos.begin()+i ); //destruir proyectil
+			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
+			i = proyectiles_enemigos.size(); //termina el bucle
+		}
+	}
+	//Revisamos si un proyectil del jugador ha destruido un enemigo
+	for (int i = 0; i < enemigos.size(); i++)
+	{
+		for(int j = 0; j < mis_proyectiles.size(); j++)
+		{
+			distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
+			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) / 1.2 )
+			{
+				enemigos[i].vidas--; //el enemigo pierde una vida
+				mis_proyectiles.erase( mis_proyectiles.begin()+j ); //destruir proyectil
+				j--; //hay un elemento menos en el vector
+			}
+		}
+	}
+}
+
+//Revisa si le quedan vidas al jugador
+bool player_is_alive()
+{
+	return (el_jugador->vidas > 0);
+}
+
+//Destruye enemigos muertos
+void check_dead_enemies()
+{
+	for (int i = 0; i < enemigos.size(); i++)
+	{
+		if(enemigos[i].vidas <= 0)
+		{
+			enemigos.erase(enemigos.begin()+i);
+			i--; //hay un elemento menos en el vector
+		}
+	}
+}
+
+//Funcion que dibuja los stas del jeugo
+void drawGameStats()
+{
+    glBegin(GL_LINES);
+    // Bottom right (red)
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex2f(20.0f, 30.0f);
+    glVertex2f(WINWIDTH - 20.0f, 30.0f);
+    glEnd();
+
+    float offset = 25.0f;
+    for (int i = 0; i < el_jugador->vidas & i < 10; ++i)
+	{
+        drawLife(35 + offset * i, 15);
+    }
+
+}
+
+//Funcion que dibuja la barra de vidas
+void drawLife(float x, float y)
+{
+    // Scale the heart symbol
+    float const scale = 0.5f;
+
+    // Heart symbol equations from Walfram Mathworld: http://mathworld.wolfram.com/HeartCurve.html
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBegin(GL_POLYGON);
+    glColor3f(1.0f, 0.2f, 0.2f);
+    for(int j = 0; j < CIRCLE_SEGMENTS; j++) {
+        float const theta = 2.0f * 3.1415926f * (float)j / (float)CIRCLE_SEGMENTS;
+        float const xx = scale * 16.0f * sinf(theta) * sinf(theta) * sinf(theta);
+        float const yy = -1 * scale * (13.0f * cosf(theta) - 5.0f * cosf(2.0f * theta) - 2 * cosf(3.0f * theta) - cosf(4.0f * theta));
+        glVertex2f(x + xx, y + yy);
+    }
+    glEnd();
 }
