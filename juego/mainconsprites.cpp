@@ -1,5 +1,7 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 
+///g++ -o main mainconsprites.cpp Player.cpp Enemigo.cpp Proyectil.cpp global_vars.cpp -lGL -lGLU -lglut -lfreeimage -pthread
+
 #include "Player.h"
 #include "Enemigo.h"
 
@@ -350,6 +352,7 @@ GLvoid window_display()
   if (player_is_alive() == 0) {
     cout << "game over" << endl;
   }
+  cout<<reload_time<<endl;
   //drawGameStats();
 	//Dibujar al jugador
 	el_jugador->mover();
@@ -414,12 +417,12 @@ GLvoid window_idle()
     //Para disparar, se requiere una recarga de 10 ciclos
     if( fire_pressed == true)
     {
-        if(reload_time == 0)
+        if(reload_time <= 0)
         {
             mis_proyectiles.push_back(el_jugador->disparar());
             reimustate=1;
             reimu_time=5;
-            reload_time = 7;
+            reload_time = int(1/delay_time);
         }
         else
         {
