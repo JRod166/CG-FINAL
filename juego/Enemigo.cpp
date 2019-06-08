@@ -1,12 +1,12 @@
 #include "Enemigo.h"
 
-
 ///Enemigo: PLantilla de los enemigos
 //Constructor
 Enemigo::Enemigo(float x, float y, int type)
 {
     centro.first = x;
     centro.second = y;
+    origen = centro;
     tipo = type;
     r = 99;
     ii = 0; // ii is the pos of the enemy based on a circle
@@ -60,7 +60,7 @@ void Enemigo::dibujar(int state)
 }
 
 ///Mover enemigos
-void Enemigo::mover(float x, float y) {
+void Enemigo::mover(pair<float, float> pos_player) {
   if(tipo==1)
   {
       centro.first += velocidad * delay_time;
@@ -76,8 +76,8 @@ void Enemigo::mover(float x, float y) {
     float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
     float x = r * cosf(theta);//calculate the x component
     float y = r * sinf(theta);//calculate the y component
-    centro.first = x; // x + 0
-    centro.second = 350 - y; // top looping
+    centro.first = origen.first + x; // x + 0
+    centro.second = origen.second + y; // top looping
     ii++;
   }
   else if(tipo == 4)
@@ -86,19 +86,21 @@ void Enemigo::mover(float x, float y) {
     float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
     float x = r * cosf(theta);//calculate the x component
     float y = r * sinf(theta);//calculate the y component
-    centro.first = x; // x + 0
-    centro.second = 350 + y; // top looping
+    centro.first = origen.first - x; // x + 0
+    centro.second = origen.second + y; // top looping
     ii++;
   }
   else if(tipo == 5) {
-    float dist_x = x - centro.first;
-    float dist_y = y - centro.second;
+    float dist_x = pos_player.first - centro.first;
+    float dist_y = pos_player.second - centro.second;
     float normal = normal_vector( dist_x , dist_y );
     pair<float, float> direccion;
     if( normal > 100) //si esta mas de 20 de distancia, persiguen al jugador
     {
         direccion.first = dist_x;
         direccion.second = dist_y;
+        origen = pos_player;
+
     }
     else //si no, dejan de perseguir y se vuelven de tipo 3
     {
@@ -112,8 +114,8 @@ void Enemigo::mover(float x, float y) {
     float theta = 2.0f * 3.1415926f * float(ii) / float(num_segments);//get the current angle
     float x = r * cosf(theta);//calculate the x component
     float y = r * sinf(theta);//calculate the y component
-    centro.first += x; // x + 0
-    centro.second +=  + y; // top looping
+    centro.first = origen.first + x; // x + 0
+    centro.second += origen.second + y; // top looping
     ii++;
     float dist_x = x - centro.first;
     float dist_y = y - centro.second;
