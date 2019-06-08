@@ -39,8 +39,9 @@ Proyectil Enemigo::disparar()
 }
 
 //Dibujar enemigo
-void Enemigo::dibujar(int state)
+void Enemigo::dibujar()
 {
+  int state = e_state.first;
   glBindTexture(GL_TEXTURE_2D,fairy);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
   glEnable(GL_BLEND);//utilizar transparencia

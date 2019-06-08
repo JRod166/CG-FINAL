@@ -2,8 +2,7 @@
 
 ///g++ -o main mainconsprites.cpp Player.cpp Enemigo.cpp Proyectil.cpp global_vars.cpp -lGL -lGLU -lglut -lfreeimage -pthread
 
-#include "Player.h"
-#include "Enemigo.h"
+#include "Juego.h"
 
 using namespace std;
 
@@ -30,6 +29,8 @@ void check_collisions();    ///1
 bool player_is_alive();     //future work
 void drawGameStats();
 void check_dead_enemies();    ///2
+
+int flag_recalc_delay = 100;
 
 //Funcion que dispara la funcion del thread cada cierto intervalo de milisegundos
 void timer_start(std::function<void(void)> func, unsigned int interval)
@@ -125,10 +126,7 @@ void enemigos_disparan();
 
 
 ///VARIABLES GLOBALES
-Player *el_jugador;
-vector<Proyectil> mis_proyectiles;
-vector<Proyectil> proyectiles_enemigos;
-vector<Enemigo> enemigos;
+
 
 
 
@@ -252,16 +250,9 @@ int main(int argc, char **argv)
 
 
 	///INICIALIZAR EL JUEGO
-	el_jugador = new Player(0,0);
 
-
-	//creamos unos enmigos de prueba
-	enemigos.push_back(Enemigo(0,100,2));
-	enemigos.push_back(Enemigo(-100,200,3));
-	enemigos.push_back(Enemigo(100,100,4));
 	//los enemigos disparan cada  segundo
 	timer_start(enemigos_disparan, 1000);
-
 
 
 
@@ -270,7 +261,7 @@ int main(int argc, char **argv)
 	init_scene();
 
 
-	glutDisplayFunc(&window_display);
+  glutDisplayFunc(&window_display);
 
 	glutKeyboardFunc(&window_key);
 	glutKeyboardUpFunc(&window_keyUp);
@@ -326,10 +317,14 @@ GLvoid window_display()
 	glOrtho(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
 	gluPerspective(45.0, 1.0, 1.0, 100.0);
 	glTranslatef(0.0f, 0.0f, -30.0f);
-	//Calculamos la velocidad de los frames
-	time_p = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
-	delay_time = float(time_p -timebase)/1000.0;// delta time
-	timebase = time_p;
+  if (flag_recalc_delay > 0) {
+    //Calculamos la velocidad de los frames
+    time_p = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
+    delay_time = float(time_p -timebase)/1000.0;// delta time
+    timebase = time_p;
+    flag_recalc_delay--;
+    /* code */
+  }
 
   glPushMatrix();
   glDisable(GL_BLEND);
@@ -346,13 +341,19 @@ GLvoid window_display()
   glEnd();
   glPopMatrix();
 
-  ////parte movible
   check_collisions();
   check_dead_enemies();
+
+  ///nivel face
+
+  nivel_1();
+  //nivel_2(), etc
+
+  ////parte movible
   if (player_is_alive() == 0) {
     cout << "game over" << endl;
   }
-  cout<<reload_time<<endl;
+  //cout<<reload_time<<endl;
   //drawGameStats();
 	//Dibujar al jugador
 	el_jugador->mover();
@@ -403,19 +404,20 @@ GLvoid window_idle()
     {
       reimustate=0;
     }
-    for(int i=0;i<enemigosstate.size();i++)
+
+    for(int i=0;i<enemigos.size();i++)
     {
-      if(enemigosstate[i].second>0)
+      if(enemigos[i].e_state.second > 0)
       {
-        enemigosstate[i].second--;
+        enemigos[i].e_state.second--;
       }
       else
       {
-        enemigosstate[i].first=0;
+        enemigos[i].e_state.first=0;
       }
     }
     //Para disparar, se requiere una recarga de 10 ciclos
-    if( fire_pressed == true)
+    if(fire_pressed == true)
     {
         if(reload_time <= 0)
         {
@@ -424,42 +426,12 @@ GLvoid window_idle()
             reimu_time=5;
             reload_time = int(1/delay_time);
         }
-        else
-        {
-            reload_time--;
-        }
     }
-    mover_proyectiles();
+    if (reload_time > 0) {
+      reload_time--;
+    }
+    cout << reload_time << endl;
     glutPostRedisplay();
-}
-
-//Funcion que mueve todos los proyectiles del jugador
-void mover_proyectiles()
-{
-    for (int i = 0; i < mis_proyectiles.size();)
-    {
-        mis_proyectiles[i].mover(el_jugador->centro.first,el_jugador->centro.second);
-        if( abs(mis_proyectiles[i].centro.second) >= lim_y)
-        {
-            mis_proyectiles.erase(mis_proyectiles.begin() + i);
-        }
-        else
-        {
-            ++i;
-        }
-    }
-  for(int i=0; i<proyectiles_enemigos.size(); )
-  {
-      proyectiles_enemigos[i].mover(el_jugador->centro.first,el_jugador->centro.second);
-      if( abs(proyectiles_enemigos[i].centro.second)>=lim_y || abs(proyectiles_enemigos[i].centro.second)>=lim_x )
-      {
-          proyectiles_enemigos.erase(proyectiles_enemigos.begin()+i);
-      }
-      else
-      {
-          ++i;
-      }
-  }
 }
 
 //Dibuja todos los proyectiles en juego
@@ -479,8 +451,8 @@ void dibujar_enemigos()
   for(int i=0; i<enemigos.size(); )
   {
       enemigos[i].mover(el_jugador->centro);
-      enemigos[i].dibujar(enemigosstate[i].first);
-      if (normal_vector(enemigos[i].centro.first, enemigos[i].centro.second) >= 1000.0) {
+      enemigos[i].dibujar();
+      if (normal_vector(enemigos[i].centro.first, enemigos[i].centro.second) >= 1500.0) {
         enemigos.erase(enemigos.begin() + i);
       }
       else {
@@ -492,12 +464,11 @@ void dibujar_enemigos()
 //Ordena a todos los enemigos que disparen
 void enemigos_disparan()
 {
-  enemigosstate.resize(enemigos.size());
     for(int i=0; i<enemigos.size(); i++)
     {
         proyectiles_enemigos.push_back(enemigos[i].disparar());
-        enemigosstate[i].first=1;
-        enemigosstate[i].second=5;
+        enemigos[i].e_state.first = 1;
+        enemigos[i].e_state.second = 5;
         if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo>2)
         {
           float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
@@ -528,6 +499,7 @@ void check_collisions()
     //Revisamos si el jugador se ha chocado con un proyectil enemigo
 	for (int i = 0; i < proyectiles_enemigos.size(); i++)
 	{
+    proyectiles_enemigos[i].mover(el_jugador->centro.first,el_jugador->centro.second);
 		distancia_entre_centros = distancia( proyectiles_enemigos[i].centro, el_jugador->centro );
 		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) / 1.2 )
 		{
@@ -535,7 +507,7 @@ void check_collisions()
 			cout<<"El jugador ha perdido una vida.";
 			//proyectiles_enemigos.erase( proyectiles_enemigos.begin()+i ); //destruir proyectil
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
-			i = proyectiles_enemigos.size(); //termina el bucle
+			break;
 		}
 	}
 	//Revisamos si un proyectil del jugador ha destruido un enemigo
@@ -543,7 +515,8 @@ void check_collisions()
 	{
 		for(int j = 0; j < mis_proyectiles.size(); j++)
 		{
-			distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
+      mis_proyectiles[i].mover(el_jugador->centro.first,el_jugador->centro.second);
+      distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
 			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) / 1.2 )
 			{
 				enemigos[i].vidas--; //el enemigo pierde una vida
@@ -567,7 +540,7 @@ void check_dead_enemies()
 	{
 		if(enemigos[i].vidas <= 0)
 		{
-			enemigos.erase(enemigos.begin()+i);
+			enemigos.erase(enemigos.begin() + i);
 			i--; //hay un elemento menos en el vector
 		}
 	}

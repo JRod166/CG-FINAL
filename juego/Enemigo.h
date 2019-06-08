@@ -15,10 +15,11 @@ public:
     float ii;
     float r;
     int state;
+    pair<int,int> e_state;
     Enemigo(float pos_x, float pos_y, int type);
     void mover(pair<float, float> pos_player); //x and y == pos player
     Proyectil disparar();
-    void dibujar(int);
+    void dibujar();
 };
 
 #endif
