@@ -315,6 +315,52 @@ GLvoid initGL()
 }
 
 
+//Dibuja cada cuadro del juego en accion
+void display_game()
+{
+    //Dibujar background
+    glPushMatrix();
+    glDisable(GL_BLEND);
+    glBindTexture(GL_TEXTURE_2D,bg);
+    glBegin(GL_QUADS);
+    glTexCoord2f(1,0);
+    glVertex3f(350,-350,2); //bottom-right
+    glTexCoord2f(1,1);
+    glVertex3f(350,350,2); //top-right
+    glTexCoord2f(0,1);
+    glVertex3f(-350,350,2); //top-left
+    glTexCoord2f(0,0);
+    glVertex3f(-350,-350,2); //bottom-left
+    glEnd();
+    glPopMatrix();
+
+    el_jugador->mover();
+    mover_proyectiles();
+    check_collisions();
+    check_dead_enemies();
+    
+
+    //Dibujar al jugador
+	el_jugador -> dibujar();
+
+	//Dibujamos los enemigos en juegos
+	dibujar_enemigos();
+
+	//Dibujar_proyectiles
+	dibujar_proyectiles();
+	
+	glutPostRedisplay();
+}
+
+
+//Dibuja la pantalla de Game over
+void display_game_over()
+{
+    //display back_ground de game over
+}
+
+
+
 ///FUNCION QUE DIBUJA LA PANTALLA
 GLvoid window_display()
 {
@@ -331,38 +377,25 @@ GLvoid window_display()
 	delay_time = float(time_p -timebase)/1000.0;// delta time
 	timebase = time_p;
 
-  glPushMatrix();
-  glDisable(GL_BLEND);
-  glBindTexture(GL_TEXTURE_2D,bg);
-  glBegin(GL_QUADS);
-  glTexCoord2f(1,0);
-  glVertex3f(350,-350,2); //bottom-right
-  glTexCoord2f(1,1);
-  glVertex3f(350,350,2); //top-right
-  glTexCoord2f(0,1);
-  glVertex3f(-350,350,2); //top-left
-  glTexCoord2f(0,0);
-  glVertex3f(-350,-350,2); //bottom-left
-  glEnd();
-  glPopMatrix();
 
-  ////parte movible
-  check_collisions();
-  check_dead_enemies();
-  if (player_is_alive() == 0) {
-    cout << "game over" << endl;
-  }
-  cout<<reload_time<<endl;
-  //drawGameStats();
-	//Dibujar al jugador
-	el_jugador->mover();
-	el_jugador -> dibujar();
 
-	//Dibujamos los enemigos en juegos
-  dibujar_proyectiles();
-	dibujar_enemigos();
+	if(player_is_alive())
+    {
+        display_game();
+    }
+    else //GAME OVER
+    {
+        //Destruinnos los objetos del juego
+        enemigos.clear();
+        mis_proyectiles.clear();
+        proyectiles_enemigos.clear();
+        display_game_over();
+    }
 
-	//Dibujar_proyectiles
+	//Dibujar los stats del juego
+	//drawGameStats();
+
+
 	glutSwapBuffers();
 
 	glFlush();
@@ -429,8 +462,6 @@ GLvoid window_idle()
             reload_time--;
         }
     }
-    mover_proyectiles();
-    glutPostRedisplay();
 }
 
 //Funcion que mueve todos los proyectiles del jugador
@@ -493,20 +524,21 @@ void dibujar_enemigos()
 void enemigos_disparan()
 {
   enemigosstate.resize(enemigos.size());
+  float dir_x, dir_y = 0;
     for(int i=0; i<enemigos.size(); i++)
     {
-        proyectiles_enemigos.push_back(enemigos[i].disparar());
+
+        if(enemigos[i].tipo>2)
+        {
+            dir_x = el_jugador->centro.first - enemigos[i].centro.first;
+            dir_y = el_jugador->centro.second - enemigos[i].centro.second;
+        }
+        proyectiles_enemigos.push_back(enemigos[i].disparar(dir_x,dir_y));
         enemigosstate[i].first=1;
         enemigosstate[i].second=5;
-        if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo>2)
-        {
-          float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
-          float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
-          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
-          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
-        }
     }
 }
+
 
 
 
@@ -516,8 +548,9 @@ void enemigos_disparan()
 //Funcion auxiliar para check_collisions: Retorna la distancia vectorial entre dos puntos
 float distancia(pair<float,float> p1, pair<float,float> p2)
 {
-	return sqrt( abs(p1.first-p2.first) + abs(p1.second-p2.second) );
+	return sqrt( pow( abs(p1.first-p2.first), 2 ) + pow( abs(p1.second-p2.second), 2 ) );
 }
+
 
 
 
@@ -529,12 +562,13 @@ void check_collisions()
 	for (int i = 0; i < proyectiles_enemigos.size(); i++)
 	{
 		distancia_entre_centros = distancia( proyectiles_enemigos[i].centro, el_jugador->centro );
-		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) / 1.2 )
+		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) )
 		{
 			el_jugador->vidas--; //el jugador pierde una vida
-			cout<<"El jugador ha perdido una vida.";
-			//proyectiles_enemigos.erase( proyectiles_enemigos.begin()+i ); //destruir proyectil
+			cout<<"El jugador ha perdido una vida porque le dio una bala."<<endl;
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
+			mis_proyectiles.clear();
+			el_jugador->centro = make_pair(0,0);
 			i = proyectiles_enemigos.size(); //termina el bucle
 		}
 	}
@@ -544,12 +578,25 @@ void check_collisions()
 		for(int j = 0; j < mis_proyectiles.size(); j++)
 		{
 			distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
-			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) / 1.2 )
+			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) )
 			{
 				enemigos[i].vidas--; //el enemigo pierde una vida
 				mis_proyectiles.erase( mis_proyectiles.begin()+j ); //destruir proyectil
 				j--; //hay un elemento menos en el vector
 			}
+		}
+	}
+	//Revisamos si el jugador se ha chocado con un enemigo
+	for (int i = 0; i < enemigos.size(); i++)
+	{
+		distancia_entre_centros = distancia( enemigos[i].centro, el_jugador->centro );
+		if( distancia_entre_centros < (el_jugador->radio_hitbox + enemigos[i].radio_hitbox) )
+		{
+			el_jugador->vidas--; //el jugador pierde una vida
+			cout<<"El jugador ha perdido una vida porque se choco con un enemigo."<<endl;
+			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
+			mis_proyectiles.clear();
+			el_jugador->centro = make_pair(0,0);
 		}
 	}
 }

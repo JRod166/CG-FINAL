@@ -5,9 +5,9 @@ Player::Player(float x, float y)
 {
     centro.first = x;
     centro.second = y;
-    radio_hitbox = 3;
+    radio_hitbox = 8;
     velocidad = 100;
-    vidas = 3;
+    vidas = 5;
     score = 0;
 }
 
