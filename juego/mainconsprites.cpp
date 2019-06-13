@@ -115,6 +115,9 @@ void dibujar_proyectiles();
 void dibujar_enemigos();
 void enemigos_disparan();
 //void mover_enemigos();
+void mover_items();
+void dibujar_items();
+
 
 
 ///FORWARD DECLARATIONS
@@ -129,6 +132,7 @@ Player *el_jugador;
 vector<Proyectil> mis_proyectiles;
 vector<Proyectil> proyectiles_enemigos;
 vector<Enemigo> enemigos;
+vector<Item> items;
 
 
 
@@ -261,6 +265,11 @@ int main(int argc, char **argv)
 	enemigos.push_back(Enemigo(100,100,4));
 	//los enemigos disparan cada  segundo
 	timer_start(enemigos_disparan, 1000);
+	
+	
+	//creamos unos items de prueba
+	items.push_back(Item(200,200,1)); //vida extra
+	items.push_back(Item(-200,200,2)); //mas velocidad
 
 
 
@@ -336,6 +345,7 @@ void display_game()
 
     el_jugador->mover();
     mover_proyectiles();
+	mover_items();
     check_collisions();
     check_dead_enemies();
     
@@ -348,6 +358,8 @@ void display_game()
 
 	//Dibujar_proyectiles
 	dibujar_proyectiles();
+	
+	dibujar_items();
 	
 	glutPostRedisplay();
 }
@@ -394,6 +406,8 @@ GLvoid window_display()
 
 	//Dibujar los stats del juego
 	//drawGameStats();
+	
+	
 
 
 	glutSwapBuffers();
@@ -541,6 +555,31 @@ void enemigos_disparan()
 
 
 
+//Funcion que mueve todos los items
+void mover_items()
+{
+    for (int i = 0; i < items.size();)
+    {
+        items[i].mover();
+        if( abs(items[i].centro.second) > lim_y)
+        {
+            items.erase(items.begin() + i);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+}
+
+//Dibuja todos los items en juego
+void dibujar_items()
+{
+    for(int i=0; i<items.size(); i++)
+    {
+        items[i].dibujar();
+    }
+}
 
 
 
@@ -552,6 +591,34 @@ float distancia(pair<float,float> p1, pair<float,float> p2)
 }
 
 
+//Funcion auxiliar para check_collision, aplica la bonificacion de un item al jugador
+void aplicar_buff(int tipo)
+{
+    //vida extra
+    if(tipo==1)
+    {
+        el_jugador->vidas++;
+        cout<<"Vida extra:"<<el_jugador->vidas<<endl;
+    }
+    //mas velocidad
+    else if(tipo==2)
+    {
+        el_jugador->velocidad = el_jugador->velocidad + 10;
+        cout<<"Velocidad mejorada"<<endl;
+    }
+    //evasion(hit_box reducido)
+    else if(tipo==3)
+    {
+        //limite de reduccion
+        if(el_jugador->radio_hitbox > 1)
+        {
+            el_jugador->radio_hitbox--;
+        }
+    }
+    //atrapar un item aumenta la puntuacion
+    el_jugador->score += 20;
+    cout<<"Score: "<<el_jugador->score<<endl;
+}
 
 
 //Aplica las leyes de choque entre objetos
@@ -568,7 +635,7 @@ void check_collisions()
 			cout<<"El jugador ha perdido una vida porque le dio una bala."<<endl;
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
 			mis_proyectiles.clear();
-			el_jugador->centro = make_pair(0,0);
+			el_jugador->reset(); //el jugador regresa a su estado inicial
 			i = proyectiles_enemigos.size(); //termina el bucle
 		}
 	}
@@ -596,9 +663,20 @@ void check_collisions()
 			cout<<"El jugador ha perdido una vida porque se choco con un enemigo."<<endl;
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
 			mis_proyectiles.clear();
-			el_jugador->centro = make_pair(0,0);
+			el_jugador->reset(); //el jugador regresa a su estado inicial
 		}
 	}
+	//revisamos si el jugador ha atrapado un item
+	for(int i = 0; i < items.size(); i++)
+    {
+        distancia_entre_centros = distancia( items[i].centro, el_jugador->centro );
+        if( distancia_entre_centros < (el_jugador->radio_hitbox + items[i].radio_hitbox) )
+        {
+            aplicar_buff(items[i].tipo); //aplicamos el efeccto del item
+            items.erase( items.begin()+ i ); //destruir item
+            i--; //hay un elemento menos en el vector
+        }
+    }
 }
 
 //Revisa si le quedan vidas al jugador
@@ -614,6 +692,8 @@ void check_dead_enemies()
 	{
 		if(enemigos[i].vidas <= 0)
 		{
+		    el_jugador->score += (enemigos[i].radio_hitbox * 10); //incrementa el score del jugador
+		    cout<<"Score: "<<el_jugador->score<<endl;
 			enemigos.erase(enemigos.begin()+i);
 			i--; //hay un elemento menos en el vector
 		}

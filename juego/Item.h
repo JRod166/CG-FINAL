@@ -1,21 +1,18 @@
-#ifndef PLAYER_H
-#define PLAYER_H
+#ifndef ITEM_H
+#define ITEM_H
 
 #include "Proyectil.h"
 
-class Player
+class Item
 {
 public:
     pair<float,float> centro; //x,y
     int radio_hitbox;
-    int vidas;
-    int score;
+    int tipo;
     float velocidad;
 
-    Player(float pos_x, float pos_y);
-    void reset();
+    Item(float pos_x, float pos_y, int type);
     void mover();
-    Proyectil disparar();
     void dibujar();
 };
 

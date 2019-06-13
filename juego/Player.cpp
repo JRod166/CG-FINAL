@@ -11,6 +11,15 @@ Player::Player(float x, float y)
     score = 0;
 }
 
+//Remueve todas las bonificaciones del jugador, se llama al morir
+void Player::reset()
+{
+    centro.first = 0;
+    centro.second = 0;
+    radio_hitbox = 8;
+    velocidad = 100;
+}
+
 //Funcion de movimiento del personaje del jugador
 void Player::mover()
 {
