@@ -12,34 +12,33 @@ Enemigo::Enemigo(float x, float y, int type)
     ii = 0; // ii is the pos of the enemy based on a circle
     if(tipo==2)
     {
-        radio_hitbox = 3;
+        radio_hitbox = 10;
         vidas = 1;
     }
     else if(tipo==3)
     {
-        radio_hitbox = 5;
+        radio_hitbox = 20;
         vidas = 2;
     }
     else if(tipo==4)
     {
-        radio_hitbox = 10;
+        radio_hitbox = 30;
         vidas = 3;
     }
     else if(tipo == 5){
-      radio_hitbox = 5;
+      radio_hitbox = 30;
       vidas = 5;
     }
     velocidad = 15;
 }
 //El enemigo dispara un proyectil
-Proyectil Enemigo::disparar()
+Proyectil Enemigo::disparar(float dir_x, float dir_y)
 {
-    //proyectiles_enemigos.push_back(Proyectil(centro.first,centro.second,tipo));
-    return Proyectil(centro.first,centro.second,tipo);
+    return Proyectil(centro.first,centro.second,tipo,dir_x,dir_y);
 }
 
 //Dibujar enemigo
-void Enemigo::dibujar(int state)
+void Enemigo::dibujar()
 {
   glBindTexture(GL_TEXTURE_2D,fairy);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
@@ -48,13 +47,13 @@ void Enemigo::dibujar(int state)
   float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
   glTexCoord2f(0.5+0.5*state,0.333333*factor);
-  glVertex3f(x+radio_hitbox*3, y-radio_hitbox*3,1); //bottom-right
+  glVertex3f(x+radio_hitbox, y-radio_hitbox,1-tipo); //bottom-right
   glTexCoord2f(0.5+0.5*state,0.333333*(factor+1));
-  glVertex3f(x+radio_hitbox*3, y+radio_hitbox*3,1); //top-right
+  glVertex3f(x+radio_hitbox, y+radio_hitbox,1-tipo); //top-right
   glTexCoord2f(0+0.5*state,0.333333*(factor+1));
-  glVertex3f(x-radio_hitbox*3, y+radio_hitbox*3,1); //top-left
+  glVertex3f(x-radio_hitbox, y+radio_hitbox,1-tipo); //top-left
   glTexCoord2f(0+0.5*state,0.333333*factor);
-  glVertex3f(x-radio_hitbox*3, y-radio_hitbox*3,1); //bottom-left
+  glVertex3f(x-radio_hitbox, y-radio_hitbox,1-tipo); //bottom-left
   glEnd();
   glDisable(GL_BLEND);
 }
