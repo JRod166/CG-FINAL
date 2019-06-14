@@ -254,6 +254,7 @@ int main(int argc, char **argv)
   fairy=LoadTexture("fairy.png",GL_BGRA_EXT,GL_RGBA);
   bullet=LoadTexture("bullets.png",GL_BGRA_EXT,GL_RGBA);
   bg=LoadTexture("space.png",GL_BGR,GL_RGB);
+  red=LoadTexture("red.jpeg",GL_BGR,GL_RGB);
 
 
 	///INICIALIZAR EL JUEGO
@@ -334,16 +335,18 @@ void display_game()
     glBindTexture(GL_TEXTURE_2D,bg);
     glBegin(GL_QUADS);
     glTexCoord2f(1,0);
-    glVertex3f(350,-350,2); //bottom-right
+    glVertex3f(350,-350,10); //bottom-right
     glTexCoord2f(1,1);
-    glVertex3f(350,350,2); //top-right
+    glVertex3f(350,350,10); //top-right
     glTexCoord2f(0,1);
-    glVertex3f(-350,350,2); //top-left
+    glVertex3f(-350,350,10); //top-left
     glTexCoord2f(0,0);
-    glVertex3f(-350,-350,2); //bottom-left
+    glVertex3f(-350,-350,10); //bottom-left
     glEnd();
     glPopMatrix();
 
+    //Dibujar los stats del juego
+    drawGameStats();
 
 
 
@@ -400,11 +403,6 @@ GLvoid window_display()
         proyectiles_enemigos.clear();
         display_game_over();
     }
-
-	//Dibujar los stats del juego
-	//drawGameStats();
-
-
 
 
 	glutSwapBuffers();
@@ -696,12 +694,17 @@ void check_dead_enemies()
 //Funcion que dibuja los stas del jeugo
 void drawGameStats()
 {
+    glBindTexture(GL_TEXTURE_2D,red);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+    glEnable(GL_BLEND);//utilizar transparencia
     glBegin(GL_LINES);
     // Bottom right (red)
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex2f(20.0f, 30.0f);
-    glVertex2f(WINWIDTH - 20.0f, 30.0f);
+    glTexCoord2f(0,0);
+    glVertex3f(20.0f, 30.0f,1);
+    glTexCoord2f(1,1);
+    glVertex3f(WINWIDTH - 20.0f, 30.0f,1);
     glEnd();
+    glDisable(GL_BLEND);
 
     float offset = 25.0f;
     for (int i = 0; i < el_jugador->vidas & i < 10; ++i)
@@ -717,15 +720,19 @@ void drawLife(float x, float y)
     // Scale the heart symbol
     float const scale = 0.5f;
 
+    glBindTexture(GL_TEXTURE_2D,red);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+    glEnable(GL_BLEND);//utilizar transparencia
     // Heart symbol equations from Walfram Mathworld: http://mathworld.wolfram.com/HeartCurve.html
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
-    glColor3f(1.0f, 0.2f, 0.2f);
     for(int j = 0; j < CIRCLE_SEGMENTS; j++) {
         float const theta = 2.0f * 3.1415926f * (float)j / (float)CIRCLE_SEGMENTS;
         float const xx = scale * 16.0f * sinf(theta) * sinf(theta) * sinf(theta);
         float const yy = -1 * scale * (13.0f * cosf(theta) - 5.0f * cosf(2.0f * theta) - 2 * cosf(3.0f * theta) - cosf(4.0f * theta));
-        glVertex2f(x + xx, y + yy);
+        glTexCoord2f(x+xx,y+yy);
+        glVertex3f(x + xx, y + yy,1);
     }
     glEnd();
+    glDisable(GL_BLEND);
 }

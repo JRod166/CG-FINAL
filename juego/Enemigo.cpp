@@ -47,13 +47,13 @@ void Enemigo::dibujar()
   float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
   glTexCoord2f(0.5+0.5*state,0.333333*factor);
-  glVertex3f(x+radio_hitbox, y-radio_hitbox,1-tipo); //bottom-right
+  glVertex3f(x+radio_hitbox, y-radio_hitbox,1-(tipo*0.1)); //bottom-right
   glTexCoord2f(0.5+0.5*state,0.333333*(factor+1));
-  glVertex3f(x+radio_hitbox, y+radio_hitbox,1-tipo); //top-right
+  glVertex3f(x+radio_hitbox, y+radio_hitbox,1-(tipo*0.1)); //top-right
   glTexCoord2f(0+0.5*state,0.333333*(factor+1));
-  glVertex3f(x-radio_hitbox, y+radio_hitbox,1-tipo); //top-left
+  glVertex3f(x-radio_hitbox, y+radio_hitbox,1-(tipo*0.1)); //top-left
   glTexCoord2f(0+0.5*state,0.333333*factor);
-  glVertex3f(x-radio_hitbox, y-radio_hitbox,1-tipo); //bottom-left
+  glVertex3f(x-radio_hitbox, y-radio_hitbox,1-(tipo*0.1)); //bottom-left
   glEnd();
   glDisable(GL_BLEND);
 }

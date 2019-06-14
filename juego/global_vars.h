@@ -35,6 +35,7 @@ extern GLuint reimu;
 extern GLuint fairy;
 extern GLuint bullet;
 extern GLuint bg;
+extern GLuint red;
 extern int reimustate;
 extern int reimu_time;
 
