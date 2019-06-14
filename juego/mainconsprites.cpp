@@ -700,16 +700,16 @@ void drawGameStats()
     glBegin(GL_LINES);
     // Bottom right (red)
     glTexCoord2f(0,0);
-    glVertex3f(20.0f, 30.0f,1);
+    glVertex3f(-lim_x, lim_y-30,1);
     glTexCoord2f(1,1);
-    glVertex3f(WINWIDTH - 20.0f, 30.0f,1);
+    glVertex3f(0, lim_y-30,1);
     glEnd();
     glDisable(GL_BLEND);
 
     float offset = 25.0f;
-    for (int i = 0; i < el_jugador->vidas & i < 10; ++i)
+    for (int i = 1; i <= el_jugador->vidas & i < 10; ++i)
 	{
-        drawLife(35 + offset * i, 15);
+        drawLife(-lim_x + offset * i, lim_y-15);
     }
 
 }
@@ -729,7 +729,7 @@ void drawLife(float x, float y)
     for(int j = 0; j < CIRCLE_SEGMENTS; j++) {
         float const theta = 2.0f * 3.1415926f * (float)j / (float)CIRCLE_SEGMENTS;
         float const xx = scale * 16.0f * sinf(theta) * sinf(theta) * sinf(theta);
-        float const yy = -1 * scale * (13.0f * cosf(theta) - 5.0f * cosf(2.0f * theta) - 2 * cosf(3.0f * theta) - cosf(4.0f * theta));
+        float const yy = scale * (13.0f * cosf(theta) - 5.0f * cosf(2.0f * theta) - 2 * cosf(3.0f * theta) - cosf(4.0f * theta));
         glTexCoord2f(x+xx,y+yy);
         glVertex3f(x + xx, y + yy,1);
     }
