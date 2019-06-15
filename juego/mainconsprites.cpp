@@ -30,7 +30,7 @@ bool player_is_alive();     //future work
 void drawGameStats();
 void check_dead_enemies();    ///2
 
-int flag_recalc_delay = 100;
+int flag_recalc_delay = 1000;
 
 //Funcion que dispara la funcion del thread cada cierto intervalo de milisegundos
 void timer_start(std::function<void(void)> func, unsigned int interval)
@@ -345,8 +345,10 @@ GLvoid window_display()
   check_dead_enemies();
 
   ///nivel face
-
-  nivel_1();
+  if (flag_recalc_delay == 0) {
+    /* code */
+    nivel_1();
+  }
   //nivel_2(), etc
 
   ////parte movible
@@ -360,6 +362,7 @@ GLvoid window_display()
 	el_jugador -> dibujar();
 
 	//Dibujamos los enemigos en juegos
+  mover_proyectiles();
   dibujar_proyectiles();
 	dibujar_enemigos();
 
@@ -434,6 +437,16 @@ GLvoid window_idle()
     glutPostRedisplay();
 }
 
+void mover_proyectiles() {
+  for (size_t i = 0; i < mis_proyectiles.size(); i++) {
+    mis_proyectiles[i].mover(el_jugador->centro.first,el_jugador->centro.second);
+  }
+  for (size_t i = 0; i < proyectiles_enemigos.size(); i++) {
+    proyectiles_enemigos[i].mover(el_jugador->centro.first,el_jugador->centro.second);
+  }
+
+}
+
 //Dibuja todos los proyectiles en juego
 void dibujar_proyectiles()
 {
@@ -452,7 +465,7 @@ void dibujar_enemigos()
   {
       enemigos[i].mover(el_jugador->centro);
       enemigos[i].dibujar();
-      if (normal_vector(enemigos[i].centro.first, enemigos[i].centro.second) >= 1500.0) {
+      if (normal_vector(enemigos[i].centro.first, enemigos[i].centro.second) >= 3000.0) {
         enemigos.erase(enemigos.begin() + i);
       }
       else {
@@ -466,17 +479,19 @@ void enemigos_disparan()
 {
     for(int i=0; i<enemigos.size(); i++)
     {
-        proyectiles_enemigos.push_back(enemigos[i].disparar());
-        enemigos[i].e_state.first = 1;
-        enemigos[i].e_state.second = 5;
-        if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo>2)
-        {
-          float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
-          float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
-          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
-          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
-        }
+      proyectiles_enemigos.push_back(enemigos[i].disparar());
+      enemigos[i].e_state.first = 1;
+      enemigos[i].e_state.second = 5;
+      if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo>2)
+      {
+        float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
+        float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
+        proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
+        proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
+      }
+      /* code */
     }
+    //else if(currently_lvl == 2) {} //etc
 }
 
 
@@ -499,7 +514,6 @@ void check_collisions()
     //Revisamos si el jugador se ha chocado con un proyectil enemigo
 	for (int i = 0; i < proyectiles_enemigos.size(); i++)
 	{
-    proyectiles_enemigos[i].mover(el_jugador->centro.first,el_jugador->centro.second);
 		distancia_entre_centros = distancia( proyectiles_enemigos[i].centro, el_jugador->centro );
 		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) / 1.2 )
 		{
@@ -515,7 +529,6 @@ void check_collisions()
 	{
 		for(int j = 0; j < mis_proyectiles.size(); j++)
 		{
-      mis_proyectiles[i].mover(el_jugador->centro.first,el_jugador->centro.second);
       distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
 			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) / 1.2 )
 			{

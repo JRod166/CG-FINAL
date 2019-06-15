@@ -11,7 +11,7 @@ Proyectil::Proyectil(float x, float y, int type)
     if(tipo==1) //proyectiles del jugador
     {
       radio_hitbox = 1;
-        velocidad = 150;
+      velocidad = 150;
     }
     else if(tipo==2) //proyectiles de enmigos tipo 2
     {
