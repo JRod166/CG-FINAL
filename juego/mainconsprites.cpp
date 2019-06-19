@@ -32,8 +32,6 @@ void drawGameStats();
 void check_dead_enemies();    ///2
 int direccion=delay_time;
 
-int flag_recalc_delay = 1000;
-
 //Funcion que dispara la funcion del thread cada cierto intervalo de milisegundos
 void timer_start(std::function<void(void)> func, unsigned int interval)
 {
@@ -125,17 +123,6 @@ void dibujar_items();
 
 ///FORWARD DECLARATIONS
 
-
-
-
-
-
-
-
-
-
-
-
 ///CUANDO SE PRESIONA UNA TECLA DE MOVIMIENTO
 GLvoid callback_special(int key, int x, int y)
 {
@@ -164,8 +151,7 @@ GLvoid callback_special(int key, int x, int y)
   {
       //movemos al jugador hacia la derecha
 	    right_pressed = true;
-
-		glutPostRedisplay();
+		  glutPostRedisplay();
   }
 }
 
@@ -256,18 +242,10 @@ int main(int argc, char **argv)
 
 	//los enemigos disparan cada  segundo
 
-	timer_start(enemigos_disparan, 300);
-
+	timer_start(enemigos_disparan, 1000);
 	//creamos unos items de prueba
 	items.push_back(Item(200,200,1)); //vida extra
 	items.push_back(Item(-200,200,2)); //mas velocidad
-
-
-	//creamos unos items de prueba
-	items.push_back(Item(200,200,1)); //vida extra
-	items.push_back(Item(-200,200,2)); //mas velocidad
-
-
 
 
 
@@ -280,8 +258,8 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(&window_key);
 	glutKeyboardUpFunc(&window_keyUp);
 
-    glutSpecialFunc(&callback_special);
-    glutSpecialUpFunc(&callback_specialUp);
+  glutSpecialFunc(&callback_special);
+  glutSpecialUpFunc(&callback_specialUp);
 	glutMouseFunc(&callback_mouse);
 	glutMotionFunc(&callback_motion);
 
@@ -338,11 +316,12 @@ void display_game()
     glVertex3f(-350,-350,10); //bottom-left
     glEnd();
     glPopMatrix();
-      ///nivel face
-    //if (flag_recalc_delay == 0) {
-      /* code */
-      //nivel_1();
-    //}
+    ///nivel face
+    if (currently_lvl== 1) {
+      cout<<enemigos.size()<<endl;
+
+      nivel_1();
+    }
     //nivel_2(), etc
 
     ////parte movible
@@ -377,22 +356,16 @@ void display_game_over()
 ///FUNCION QUE DIBUJA LA PANTALLA
 GLvoid window_display()
 {
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(-20.0f, 20.0f, -20.0f, 20.0f, -20.0f, 20.0f);
 	gluPerspective(45.0, 1.0, 1.0, 100.0);
 	glTranslatef(0.0f, 0.0f, -30.0f);
-  if (flag_recalc_delay > 0) {
-    //Calculamos la velocidad de los frames
-    time_p = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
-    delay_time = float(time_p -timebase)/1000.0;// delta time
-    timebase = time_p;
-    flag_recalc_delay--;
-    /* code */
-  }
+  //Calculamos la velocidad de los frames
+	time_p = glutGet(GLUT_ELAPSED_TIME); // recupera el tiempo ,que paso desde el incio de programa
+	delay_time = float(time_p -timebase)/1000.0;// delta time
+	timebase = time_p;
 
 	if(player_is_alive())
     {
@@ -473,24 +446,20 @@ GLvoid window_idle()
             reimu_time=14;
             reload_time = int(0.1/delay_time);
         }
-        else
-        {
-            reload_time--;
-        }
+    }
+    if (reload_time > 0) {
+      reload_time--;
     }
     el_jugador->mover();
     mover_proyectiles();
-	  mover_items();
+    mover_items();
     check_collisions();
     check_dead_enemies();
-    if (reload_time > 0) {
-        reload_time--;
-      }
-    //glutPostRedisplay();
+
 }
 
 void mover_proyectiles() {
-  for (size_t i = 0; i < mis_proyectiles.size(); ) {
+  for (int i = 0; i < mis_proyectiles.size(); ) {
     if (normal_vector(mis_proyectiles[i].centro.first, mis_proyectiles[i].centro.second) >= 3000.0) {
       mis_proyectiles.erase(mis_proyectiles.begin() + i);
     }
@@ -499,7 +468,7 @@ void mover_proyectiles() {
       ++i;
     }
   }
-  for (size_t i = 0; i < proyectiles_enemigos.size(); ) {
+  for (int  i = 0; i < proyectiles_enemigos.size(); ) {
     if (normal_vector(proyectiles_enemigos[i].centro.first, proyectiles_enemigos[i].centro.second) >= 700.0) {
       proyectiles_enemigos.erase(proyectiles_enemigos.begin() + i);
     }
@@ -627,7 +596,7 @@ void aplicar_buff(int tipo)
 	//mejora de disparo
     else if(tipo==4)
     {
-        el_jugador->disparo_upgrade = true;
+        //el_jugador->disparo_upgrade = true;
         cout<<"Disparo mejorado"<<endl;
     }
     //atrapar un item aumenta la puntuacion

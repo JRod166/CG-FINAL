@@ -15,33 +15,32 @@ void nivel_1() {
   if (level_it == 0) {
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(350 + i * 20, 100, 2));
-      go_horizontal(enemigos[enemigos.size() - 1], -5);
+      go_horizontal(enemigos[enemigos.size() - 1], -1);
     }
     enemigos.push_back(Enemigo(-100, -350,3));
-    go_vertical(enemigos[enemigos.size() - 1], 10);
+    go_vertical(enemigos[enemigos.size() - 1], 1);
     enemigos.push_back(Enemigo(100, -350,4));
-    go_vertical(enemigos[enemigos.size() - 1], 10);
+    go_vertical(enemigos[enemigos.size() - 1], 1);
   }
   else if(level_it == phase) {
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(-350 - i * 20, 100, 2));
-      cout << i << endl;
-      go_horizontal(enemigos[enemigos.size() - 1], 5);
+      go_horizontal(enemigos[enemigos.size() - 1], 1);
     }
     enemigos.push_back(Enemigo(-100, 350, 3));
-    go_vertical(enemigos[enemigos.size() - 1], -10);
+    go_vertical(enemigos[enemigos.size() - 1], -1);
     enemigos.push_back(Enemigo(100, 350, 4));
-    go_vertical(enemigos[enemigos.size() - 1], -10);
+    go_vertical(enemigos[enemigos.size() - 1], -1);
   }
   else if(level_it == phase * 2) {
     enemigos.push_back(Enemigo(-100, -350,3));
-    go_vertical(enemigos[enemigos.size() - 1], 10);
+    go_vertical(enemigos[enemigos.size() - 1], 1);
     enemigos.push_back(Enemigo(100, -350,4));
-    go_vertical(enemigos[enemigos.size() - 1], 10);
+    go_vertical(enemigos[enemigos.size() - 1], 1);
     enemigos.push_back(Enemigo(-100, 350, 3));
-    go_vertical(enemigos[enemigos.size() - 1], -10);
+    go_vertical(enemigos[enemigos.size() - 1], -1);
     enemigos.push_back(Enemigo(100, 350, 4));
-    go_vertical(enemigos[enemigos.size() - 1], -10);
+    go_vertical(enemigos[enemigos.size() - 1], -1);
   }
   else if(level_it == phase * 3) {
     gen_meteor_rain(20);
@@ -49,27 +48,27 @@ void nivel_1() {
   else if(level_it == phase * 4) {
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(350 + i * 20, 100, 2));
-      go_horizontal(enemigos[enemigos.size() - 1], -20);
+      go_horizontal(enemigos[enemigos.size() - 1], -1);
     }
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(-350 - i * 20, 100, 2));
-      go_horizontal(enemigos[enemigos.size() - 1], 20);
+      go_horizontal(enemigos[enemigos.size() - 1], 1);
     }
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(350 + i * 20, 150, 2));
-      go_horizontal(enemigos[enemigos.size() - 1], -20);
+      go_horizontal(enemigos[enemigos.size() - 1], -1);
     }
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(-350 - i * 20, 150, 2));
-      go_horizontal(enemigos[enemigos.size() - 1], 20);
+      go_horizontal(enemigos[enemigos.size() - 1], 1);
     }
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(350 + i * 20, 200, 2));
-      go_horizontal(enemigos[enemigos.size() - 1], -20);
+      go_horizontal(enemigos[enemigos.size() - 1], -1);
     }
     for (int i = 0; i < 10; i++) {
       enemigos.push_back(Enemigo(-350 - i * 20, 200, 2));
-      go_horizontal(enemigos[enemigos.size() - 1], 20);
+      go_horizontal(enemigos[enemigos.size() - 1], 1);
     }
 
   }
