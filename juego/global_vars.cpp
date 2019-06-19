@@ -1,7 +1,6 @@
 #include "global_vars.h"
 
-float delay_time = 1;
-vector <pair<int,int>> enemigosstate;
+float delay_time = 0.0001;
 float lim_x = 245;
 float lim_y = 245;
 int time_p = 0;

@@ -17,7 +17,6 @@
 using namespace std;
 
 extern float delay_time;
-extern vector <pair<int,int>> enemigosstate;
 extern float lim_x;
 extern float lim_y;
 extern int time_p;
