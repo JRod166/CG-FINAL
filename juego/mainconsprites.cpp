@@ -552,8 +552,10 @@ void enemigos_disparan()
         if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo > 2 &&
         proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo < 10)
         {
-            dir_x = el_jugador->centro.first - enemigos[i].centro.first;
-            dir_y = el_jugador->centro.second - enemigos[i].centro.second;
+            float x = proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
+            float y = proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
+            proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first=el_jugador->centro.first-x;
+            proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second=el_jugador->centro.second-y;
         }
       }
     }
@@ -577,24 +579,6 @@ void mover_items()
   }
 }
 //else if(currently_lvl == 2) {} //etc
-
-
-//Funcion que mueve todos los items
-void mover_items()
-{
-    for (int i = 0; i < items.size();)
-    {
-        items[i].mover();
-        if( abs(items[i].centro.second) > lim_y)
-        {
-            items.erase(items.begin() + i);
-        }
-        else
-        {
-            ++i;
-        }
-    }
-}
 
 
 //Dibuja todos los items en juego

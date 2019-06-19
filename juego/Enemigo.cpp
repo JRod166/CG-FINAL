@@ -32,7 +32,7 @@ Enemigo::Enemigo(float x, float y, int type)
     velocidad = 15;
 }
 //El enemigo dispara un proyectil
-Proyectil Enemigo::disparar(float dir_x, float dir_y)
+Proyectil Enemigo::disparar()
 {
   //proyectiles_enemigos.push_back(Proyectil(centro.first,centro.second,tipo));
   return Proyectil(centro.first,centro.second,tipo);
