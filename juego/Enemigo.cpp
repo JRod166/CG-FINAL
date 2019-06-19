@@ -4,43 +4,35 @@
 //Constructor
 Enemigo::Enemigo(float x, float y, int type)
 {
-  centro.first = x;
-  centro.second = y;
-  origen = centro;
-  tipo = type;
-  r = 99;
-  ii = 0; // ii is the pos of the enemy based on a circle
-  if(tipo==2)
-  {
-    radio_hitbox = 3;
-    velocidad = 6;
-    vidas = 2;
-  }
-  else if(tipo==3)
-  {
-    radio_hitbox = 5;
-    velocidad = 4;
-    vidas = 4;
-  }
-  else if(tipo==4)
-  {
-    radio_hitbox = 10;
-    velocidad = 3;
-    vidas = 5;
-  }
-  else if(tipo == 5){
-    radio_hitbox = 5;
-    velocidad = 5;
-    vidas = 2;
-  }
-  else if (tipo == 10) { ///meteorito no dispara
-    radio_hitbox = 6;
-    velocidad = 7;
-    vidas = 5;
-  }
+    centro.first = x;
+    centro.second = y;
+    origen = centro;
+    tipo = type;
+    r = 99;
+    ii = 0; // ii is the pos of the enemy based on a circle
+    if(tipo==2)
+    {
+        radio_hitbox = 5;
+        vidas = 1;
+    }
+    else if(tipo==3)
+    {
+        radio_hitbox = 10;
+        vidas = 2;
+    }
+    else if(tipo==4)
+    {
+        radio_hitbox = 15;
+        vidas = 3;
+    }
+    else if(tipo == 5){
+      radio_hitbox = 15;
+      vidas = 5;
+    }
+    velocidad = 15;
 }
 //El enemigo dispara un proyectil
-Proyectil Enemigo::disparar()
+Proyectil Enemigo::disparar(float dir_x, float dir_y)
 {
   //proyectiles_enemigos.push_back(Proyectil(centro.first,centro.second,tipo));
   return Proyectil(centro.first,centro.second,tipo);
@@ -57,13 +49,13 @@ void Enemigo::dibujar()
   float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
   glTexCoord2f(0.5+0.5*state,0.333333*factor);
-  glVertex3f(x+radio_hitbox, y-radio_hitbox,1); //bottom-right
+  glVertex3f(x+radio_hitbox*2, y-radio_hitbox*2,1-(tipo*0.1)); //bottom-right
   glTexCoord2f(0.5+0.5*state,0.333333*(factor+1));
-  glVertex3f(x+radio_hitbox, y+radio_hitbox,1); //top-right
+  glVertex3f(x+radio_hitbox*2, y+radio_hitbox*2,1-(tipo*0.1)); //top-right
   glTexCoord2f(0+0.5*state,0.333333*(factor+1));
-  glVertex3f(x-radio_hitbox, y+radio_hitbox,1); //top-left
+  glVertex3f(x-radio_hitbox*2, y+radio_hitbox*2,1-(tipo*0.1)); //top-left
   glTexCoord2f(0+0.5*state,0.333333*factor);
-  glVertex3f(x-radio_hitbox, y-radio_hitbox,1); //bottom-left
+  glVertex3f(x-radio_hitbox*2, y-radio_hitbox*2,1-(tipo*0.1)); //bottom-left
   glEnd();
   glDisable(GL_BLEND);
 }

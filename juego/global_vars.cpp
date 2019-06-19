@@ -13,14 +13,14 @@ bool down_pressed = false;
 bool left_pressed = false;
 bool right_pressed = false;
 bool fire_pressed = false;
-GLuint reimu,fairy,bullet,bg;
+GLuint reimu,fairy,bullet,red,bg;
 int reimustate=0;
 /*  0=static
 1=Shoot
 2=Left move
 3=right move
 */
-int reimu_time=0;
+float reimu_time=0;
 
 float normal_vector(float x, float y)
 {

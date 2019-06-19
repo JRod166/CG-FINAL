@@ -1,8 +1,9 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 
-///g++ -o main mainconsprites.cpp Player.cpp Enemigo.cpp Proyectil.cpp global_vars.cpp -lGL -lGLU -lglut -lfreeimage -pthread
+///g++ -o main mainconsprites.cpp Player.cpp Juego.cpp Enemigo.cpp Proyectil.cpp global_vars.cpp Item.cpp -lGL -lGLU -lglut -lfreeimage -pthread
 
 #include "Juego.h"
+
 
 using namespace std;
 
@@ -29,6 +30,7 @@ void check_collisions();    ///1
 bool player_is_alive();     //future work
 void drawGameStats();
 void check_dead_enemies();    ///2
+int direccion=delay_time;
 
 int flag_recalc_delay = 1000;
 
@@ -127,8 +129,6 @@ void dibujar_items();
 
 
 
-
-///VARIABLES GLOBALES
 
 
 
@@ -249,6 +249,7 @@ int main(int argc, char **argv)
   fairy=LoadTexture("fairy.png",GL_BGRA_EXT,GL_RGBA);
   bullet=LoadTexture("bullets.png",GL_BGRA_EXT,GL_RGBA);
   bg=LoadTexture("space.png",GL_BGR,GL_RGB);
+  red=LoadTexture("red.jpeg",GL_BGR,GL_RGB);
 
 
 	///INICIALIZAR EL JUEGO
@@ -256,6 +257,11 @@ int main(int argc, char **argv)
 	//los enemigos disparan cada  segundo
 
 	timer_start(enemigos_disparan, 300);
+
+	//creamos unos items de prueba
+	items.push_back(Item(200,200,1)); //vida extra
+	items.push_back(Item(-200,200,2)); //mas velocidad
+
 
 	//creamos unos items de prueba
 	items.push_back(Item(200,200,1)); //vida extra
@@ -323,32 +329,37 @@ void display_game()
     glBindTexture(GL_TEXTURE_2D,bg);
     glBegin(GL_QUADS);
     glTexCoord2f(1,0);
-    glVertex3f(350,-350,2); //bottom-right
+    glVertex3f(350,-350,10); //bottom-right
     glTexCoord2f(1,1);
-    glVertex3f(350,350,2); //top-right
+    glVertex3f(350,350,10); //top-right
     glTexCoord2f(0,1);
-    glVertex3f(-350,350,2); //top-left
+    glVertex3f(-350,350,10); //top-left
     glTexCoord2f(0,0);
-    glVertex3f(-350,-350,2); //bottom-left
+    glVertex3f(-350,-350,10); //bottom-left
     glEnd();
     glPopMatrix();
+      ///nivel face
+    if (flag_recalc_delay == 0) {
+      /* code */
+      nivel_1();
+    }
+    //nivel_2(), etc
 
-    el_jugador->mover();
-    mover_proyectiles();
-	mover_items();
-    check_collisions();
-    check_dead_enemies();
+    ////parte movible
 
 
-    //Dibujar al jugador
-	el_jugador -> dibujar();
+    //Dibujar los stats del juego
+    drawGameStats();
+
 
 	//Dibujamos los enemigos en juegos
 	dibujar_enemigos();
 
-	//Dibujar_proyectiles
-	dibujar_proyectiles();
+  //Dibujar al jugador
+  el_jugador -> dibujar();
 
+  //Dibujar_proyectiles
+	dibujar_proyectiles();
 	dibujar_items();
 
 	glutPostRedisplay();
@@ -383,47 +394,6 @@ GLvoid window_display()
     /* code */
   }
 
-
-  glPushMatrix();
-  glDisable(GL_BLEND);
-  glBindTexture(GL_TEXTURE_2D,bg);
-  glBegin(GL_QUADS);
-  glTexCoord2f(1,0);
-  glVertex3f(350,-350,2); //bottom-right
-  glTexCoord2f(1,1);
-  glVertex3f(350,350,2); //top-right
-  glTexCoord2f(0,1);
-  glVertex3f(-350,350,2); //top-left
-  glTexCoord2f(0,0);
-  glVertex3f(-350,-350,2); //bottom-left
-  glEnd();
-  glPopMatrix();
-
-  check_collisions();
-  check_dead_enemies();
-
-  ///nivel face
-  if (flag_recalc_delay == 0) {
-    /* code */
-    nivel_1();
-  }
-  //nivel_2(), etc
-
-  ////parte movible
-  if (player_is_alive() == 0) {
-    cout << "game over" << endl;
-  }
-  //cout<<reload_time<<endl;
-  //drawGameStats();
-	//Dibujar al jugador
-	el_jugador->mover();
-	el_jugador -> dibujar();
-
-	//Dibujamos los enemigos en juegos
-  mover_proyectiles();
-  dibujar_proyectiles();
-	dibujar_enemigos();
-
 	if(player_is_alive())
     {
         display_game();
@@ -436,13 +406,6 @@ GLvoid window_display()
         proyectiles_enemigos.clear();
         display_game_over();
     }
-
-	//Dibujar los stats del juego
-	//drawGameStats();
-
-
-
-
 	glutSwapBuffers();
 
 	glFlush();
@@ -464,20 +427,25 @@ void init_scene()
 
 }
 
-
-
 //Function called on each frame
 GLvoid window_idle()
 {
-    if(left_pressed)
-    {reimustate=2;
-    reimu_time=5;}
-    if(right_pressed)
-    {reimustate=3;
-    reimu_time=5;}
-    if(reimu_time>0)
+    if(reimu_time<=0)
     {
-      reimu_time--;
+      direccion=1;
+    }
+    if(reimu_time>=2000)
+    {
+      direccion=-1;
+    }
+    reimu_time+=direccion;
+    if(left_pressed)
+    {
+      reimustate=2;
+    }
+    else if(right_pressed)
+    {
+      reimustate=3;
     }
     else
     {
@@ -502,14 +470,22 @@ GLvoid window_idle()
         {
             mis_proyectiles.push_back(el_jugador->disparar());
             reimustate=1;
-            reimu_time=5;
+            reimu_time=14;
             reload_time = int(0.1/delay_time);
         }
+        else
+        {
+            reload_time--;
+        }
     }
+    el_jugador->mover();
+    mover_proyectiles();
+	  mover_items();
+    check_collisions();
+    check_dead_enemies();
     if (reload_time > 0) {
-      reload_time--;
-    }
-    //cout << reload_time << endl;
+        reload_time--;
+      }
     glutPostRedisplay();
 }
 
@@ -576,10 +552,8 @@ void enemigos_disparan()
         if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo > 2 &&
         proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo < 10)
         {
-          float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
-          float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
-          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
-          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
+            dir_x = el_jugador->centro.first - enemigos[i].centro.first;
+            dir_y = el_jugador->centro.second - enemigos[i].centro.second;
         }
       }
     }
@@ -603,6 +577,24 @@ void mover_items()
   }
 }
 //else if(currently_lvl == 2) {} //etc
+
+
+//Funcion que mueve todos los items
+void mover_items()
+{
+    for (int i = 0; i < items.size();)
+    {
+        items[i].mover();
+        if( abs(items[i].centro.second) > lim_y)
+        {
+            items.erase(items.begin() + i);
+        }
+        else
+        {
+            ++i;
+        }
+    }
+}
 
 
 //Dibuja todos los items en juego
@@ -732,7 +724,6 @@ void check_dead_enemies()
 	{
 		if(enemigos[i].vidas <= 0)
 		{
-
 		    el_jugador->score += (enemigos[i].radio_hitbox * 10); //incrementa el score del jugador
 		    cout<<"Score: "<<el_jugador->score<<endl;
 			enemigos.erase(enemigos.begin()+i);
@@ -744,17 +735,22 @@ void check_dead_enemies()
 //Funcion que dibuja los stas del jeugo
 void drawGameStats()
 {
+    glBindTexture(GL_TEXTURE_2D,red);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+    glEnable(GL_BLEND);//utilizar transparencia
     glBegin(GL_LINES);
     // Bottom right (red)
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex2f(20.0f, 30.0f);
-    glVertex2f(WINWIDTH - 20.0f, 30.0f);
+    glTexCoord2f(0,0);
+    glVertex3f(-lim_x, lim_y-30,1);
+    glTexCoord2f(1,1);
+    glVertex3f(0, lim_y-30,1);
     glEnd();
+    glDisable(GL_BLEND);
 
     float offset = 25.0f;
-    for (int i = 0; i < el_jugador->vidas & i < 10; ++i)
+    for (int i = 1; i <= el_jugador->vidas & i < 10; ++i)
 	{
-        drawLife(35 + offset * i, 15);
+        drawLife(-lim_x + offset * i, lim_y-15);
     }
 
 }
@@ -765,15 +761,19 @@ void drawLife(float x, float y)
     // Scale the heart symbol
     float const scale = 0.5f;
 
+    glBindTexture(GL_TEXTURE_2D,red);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+    glEnable(GL_BLEND);//utilizar transparencia
     // Heart symbol equations from Walfram Mathworld: http://mathworld.wolfram.com/HeartCurve.html
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBegin(GL_POLYGON);
-    glColor3f(1.0f, 0.2f, 0.2f);
     for(int j = 0; j < CIRCLE_SEGMENTS; j++) {
         float const theta = 2.0f * 3.1415926f * (float)j / (float)CIRCLE_SEGMENTS;
         float const xx = scale * 16.0f * sinf(theta) * sinf(theta) * sinf(theta);
-        float const yy = -1 * scale * (13.0f * cosf(theta) - 5.0f * cosf(2.0f * theta) - 2 * cosf(3.0f * theta) - cosf(4.0f * theta));
-        glVertex2f(x + xx, y + yy);
+        float const yy = scale * (13.0f * cosf(theta) - 5.0f * cosf(2.0f * theta) - 2 * cosf(3.0f * theta) - cosf(4.0f * theta));
+        glTexCoord2f(x+xx,y+yy);
+        glVertex3f(x + xx, y + yy,1);
     }
     glEnd();
+    glDisable(GL_BLEND);
 }
