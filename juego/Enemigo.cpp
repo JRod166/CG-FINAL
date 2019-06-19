@@ -13,20 +13,31 @@ Enemigo::Enemigo(float x, float y, int type)
   if(tipo==2)
   {
     radio_hitbox = 3;
+    velocidad = 6;
+    vidas = 2;
   }
   else if(tipo==3)
   {
     radio_hitbox = 5;
+    velocidad = 4;
+    vidas = 4;
   }
   else if(tipo==4)
   {
     radio_hitbox = 10;
+    velocidad = 3;
+    vidas = 5;
   }
   else if(tipo == 5){
     radio_hitbox = 5;
+    velocidad = 5;
+    vidas = 2;
   }
-  vidas = 5;
-  velocidad = 15;
+  else if (tipo == 10) { ///meteorito no dispara
+    radio_hitbox = 6;
+    velocidad = 7;
+    vidas = 5;
+  }
 }
 //El enemigo dispara un proyectil
 Proyectil Enemigo::disparar()

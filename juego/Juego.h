@@ -12,6 +12,10 @@ extern int currently_lvl;
 extern int next_part_time;
 extern float np_average_time;
 extern long long level_it;
+extern long long phase;
+
+extern void gen_meteor(pair<float, float> inicio, pair<float, float> final);
+extern void gen_meteor_rain(int meteors);
 
 extern void clear_hash(Enemigo &my_enemy);
 extern void go_horizontal(Enemigo &my_enemy, float direction);

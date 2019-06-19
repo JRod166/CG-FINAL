@@ -252,7 +252,7 @@ int main(int argc, char **argv)
 	///INICIALIZAR EL JUEGO
 
 	//los enemigos disparan cada  segundo
-	timer_start(enemigos_disparan, 1000);
+	timer_start(enemigos_disparan, 300);
 
 
 
@@ -427,22 +427,34 @@ GLvoid window_idle()
             mis_proyectiles.push_back(el_jugador->disparar());
             reimustate=1;
             reimu_time=5;
-            reload_time = int(1/delay_time);
+            reload_time = int(0.1/delay_time);
         }
     }
     if (reload_time > 0) {
       reload_time--;
     }
-    cout << reload_time << endl;
+    //cout << reload_time << endl;
     glutPostRedisplay();
 }
 
 void mover_proyectiles() {
-  for (size_t i = 0; i < mis_proyectiles.size(); i++) {
-    mis_proyectiles[i].mover(el_jugador->centro.first,el_jugador->centro.second);
+  for (size_t i = 0; i < mis_proyectiles.size(); ) {
+    if (normal_vector(mis_proyectiles[i].centro.first, mis_proyectiles[i].centro.second) >= 3000.0) {
+      mis_proyectiles.erase(mis_proyectiles.begin() + i);
+    }
+    else {
+      mis_proyectiles[i].mover(el_jugador->centro.first,el_jugador->centro.second);
+      ++i;
+    }
   }
-  for (size_t i = 0; i < proyectiles_enemigos.size(); i++) {
-    proyectiles_enemigos[i].mover(el_jugador->centro.first,el_jugador->centro.second);
+  for (size_t i = 0; i < proyectiles_enemigos.size(); ) {
+    if (normal_vector(proyectiles_enemigos[i].centro.first, proyectiles_enemigos[i].centro.second) >= 700.0) {
+      proyectiles_enemigos.erase(proyectiles_enemigos.begin() + i);
+    }
+    else {
+      proyectiles_enemigos[i].mover(el_jugador->centro.first,el_jugador->centro.second);
+      ++i;
+    }
   }
 
 }
@@ -479,17 +491,23 @@ void enemigos_disparan()
 {
     for(int i=0; i<enemigos.size(); i++)
     {
-      proyectiles_enemigos.push_back(enemigos[i].disparar());
-      enemigos[i].e_state.first = 1;
-      enemigos[i].e_state.second = 5;
-      if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo>2)
-      {
-        float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
-        float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
-        proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
-        proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
+      if (enemigos[i].tipo % 10 != 0) {
+        if (enemigos[i].e_state.first == 0) {
+          /* code */
+          proyectiles_enemigos.push_back(enemigos[i].disparar());
+          enemigos[i].e_state.first = 1;
+          enemigos[i].e_state.second = 30;
+          if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo > 2 &&
+          proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo < 10)
+          {
+            float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
+            float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
+            proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
+            proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
+          }
+
+        }
       }
-      /* code */
     }
     //else if(currently_lvl == 2) {} //etc
 }
