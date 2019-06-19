@@ -17,8 +17,6 @@ public:
     int state;
     Enemigo(float pos_x, float pos_y, int type);
     void mover(pair<float, float> pos_player); //x and y == pos player
-    Proyectil disparar();
+    Proyectil disparar(float dir_x=0, float dir_y=0);
     void dibujar(int);
 };
-
-#endif
