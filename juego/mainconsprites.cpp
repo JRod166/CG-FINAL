@@ -116,6 +116,9 @@ void dibujar_proyectiles();
 void dibujar_enemigos();
 void enemigos_disparan();
 //void mover_enemigos();
+void mover_items();
+void dibujar_items();
+
 
 
 ///FORWARD DECLARATIONS
@@ -126,7 +129,6 @@ void enemigos_disparan();
 
 
 ///VARIABLES GLOBALES
-
 
 
 
@@ -252,7 +254,13 @@ int main(int argc, char **argv)
 	///INICIALIZAR EL JUEGO
 
 	//los enemigos disparan cada  segundo
+
 	timer_start(enemigos_disparan, 300);
+	
+	//creamos unos items de prueba
+	items.push_back(Item(200,200,1)); //vida extra
+	items.push_back(Item(-200,200,2)); //mas velocidad
+
 
 
 
@@ -306,6 +314,55 @@ GLvoid initGL()
 }
 
 
+//Dibuja cada cuadro del juego en accion
+void display_game()
+{
+    //Dibujar background
+    glPushMatrix();
+    glDisable(GL_BLEND);
+    glBindTexture(GL_TEXTURE_2D,bg);
+    glBegin(GL_QUADS);
+    glTexCoord2f(1,0);
+    glVertex3f(350,-350,2); //bottom-right
+    glTexCoord2f(1,1);
+    glVertex3f(350,350,2); //top-right
+    glTexCoord2f(0,1);
+    glVertex3f(-350,350,2); //top-left
+    glTexCoord2f(0,0);
+    glVertex3f(-350,-350,2); //bottom-left
+    glEnd();
+    glPopMatrix();
+
+    el_jugador->mover();
+    mover_proyectiles();
+	mover_items();
+    check_collisions();
+    check_dead_enemies();
+    
+
+    //Dibujar al jugador
+	el_jugador -> dibujar();
+
+	//Dibujamos los enemigos en juegos
+	dibujar_enemigos();
+
+	//Dibujar_proyectiles
+	dibujar_proyectiles();
+	
+	dibujar_items();
+	
+	glutPostRedisplay();
+}
+
+
+//Dibuja la pantalla de Game over
+void display_game_over()
+{
+    //display back_ground de game over
+}
+
+
+
 ///FUNCION QUE DIBUJA LA PANTALLA
 GLvoid window_display()
 {
@@ -325,6 +382,7 @@ GLvoid window_display()
     flag_recalc_delay--;
     /* code */
   }
+
 
   glPushMatrix();
   glDisable(GL_BLEND);
@@ -366,7 +424,25 @@ GLvoid window_display()
   dibujar_proyectiles();
 	dibujar_enemigos();
 
-	//Dibujar_proyectiles
+	if(player_is_alive())
+    {
+        display_game();
+    }
+    else //GAME OVER
+    {
+        //Destruinnos los objetos del juego
+        enemigos.clear();
+        mis_proyectiles.clear();
+        proyectiles_enemigos.clear();
+        display_game_over();
+    }
+
+	//Dibujar los stats del juego
+	//drawGameStats();
+	
+	
+
+
 	glutSwapBuffers();
 
 	glFlush();
@@ -506,13 +582,34 @@ void enemigos_disparan()
             proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
           }
 
+//Funcion que mueve todos los items
+void mover_items()
+{
+    for (int i = 0; i < items.size();)
+    {
+        items[i].mover();
+        if( abs(items[i].centro.second) > lim_y)
+        {
+            items.erase(items.begin() + i);
+        }
+        else
+        {
+            ++i;
+
         }
       }
     }
     //else if(currently_lvl == 2) {} //etc
 }
 
-
+//Dibuja todos los items en juego
+void dibujar_items()
+{
+    for(int i=0; i<items.size(); i++)
+    {
+        items[i].dibujar();
+    }
+}
 
 
 
@@ -520,9 +617,44 @@ void enemigos_disparan()
 //Funcion auxiliar para check_collisions: Retorna la distancia vectorial entre dos puntos
 float distancia(pair<float,float> p1, pair<float,float> p2)
 {
-	return sqrt( abs(p1.first-p2.first) + abs(p1.second-p2.second) );
+	return sqrt( pow( abs(p1.first-p2.first), 2 ) + pow( abs(p1.second-p2.second), 2 ) );
 }
 
+
+//Funcion auxiliar para check_collision, aplica la bonificacion de un item al jugador
+void aplicar_buff(int tipo)
+{
+    //vida extra
+    if(tipo==1)
+    {
+        el_jugador->vidas++;
+        cout<<"Vida extra:"<<el_jugador->vidas<<endl;
+    }
+    //mas velocidad
+    else if(tipo==2)
+    {
+        el_jugador->velocidad = el_jugador->velocidad + 10;
+        cout<<"Velocidad mejorada"<<endl;
+    }
+    //evasion(hit_box reducido)
+    else if(tipo==3)
+    {
+        //limite de reduccion
+        if(el_jugador->radio_hitbox > 1)
+        {
+            el_jugador->radio_hitbox--;
+        }
+    }
+	//mejora de disparo
+    else if(tipo==4)
+    {
+        el_jugador->disparo_upgrade = true;
+        cout<<"Disparo mejorado"<<endl;
+    }
+    //atrapar un item aumenta la puntuacion
+    el_jugador->score += 20;
+    cout<<"Score: "<<el_jugador->score<<endl;
+}
 
 
 //Aplica las leyes de choque entre objetos
@@ -533,13 +665,14 @@ void check_collisions()
 	for (int i = 0; i < proyectiles_enemigos.size(); i++)
 	{
 		distancia_entre_centros = distancia( proyectiles_enemigos[i].centro, el_jugador->centro );
-		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) / 1.2 )
+		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) )
 		{
 			el_jugador->vidas--; //el jugador pierde una vida
-			cout<<"El jugador ha perdido una vida.";
-			//proyectiles_enemigos.erase( proyectiles_enemigos.begin()+i ); //destruir proyectil
+			cout<<"El jugador ha perdido una vida porque le dio una bala."<<endl;
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
-			break;
+			mis_proyectiles.clear();
+			el_jugador->reset(); //el jugador regresa a su estado inicial
+			break; //termina el bucle
 		}
 	}
 	//Revisamos si un proyectil del jugador ha destruido un enemigo
@@ -547,8 +680,9 @@ void check_collisions()
 	{
 		for(int j = 0; j < mis_proyectiles.size(); j++)
 		{
-      distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
-			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) / 1.2 )
+
+			distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
+			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) )
 			{
 				enemigos[i].vidas--; //el enemigo pierde una vida
 				mis_proyectiles.erase( mis_proyectiles.begin()+j ); //destruir proyectil
@@ -556,6 +690,30 @@ void check_collisions()
 			}
 		}
 	}
+	//Revisamos si el jugador se ha chocado con un enemigo
+	for (int i = 0; i < enemigos.size(); i++)
+	{
+		distancia_entre_centros = distancia( enemigos[i].centro, el_jugador->centro );
+		if( distancia_entre_centros < (el_jugador->radio_hitbox + enemigos[i].radio_hitbox) )
+		{
+			el_jugador->vidas--; //el jugador pierde una vida
+			cout<<"El jugador ha perdido una vida porque se choco con un enemigo."<<endl;
+			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
+			mis_proyectiles.clear();
+			el_jugador->reset(); //el jugador regresa a su estado inicial
+		}
+	}
+	//revisamos si el jugador ha atrapado un item
+	for(int i = 0; i < items.size(); i++)
+    {
+        distancia_entre_centros = distancia( items[i].centro, el_jugador->centro );
+        if( distancia_entre_centros < (el_jugador->radio_hitbox + items[i].radio_hitbox) )
+        {
+            aplicar_buff(items[i].tipo); //aplicamos el efeccto del item
+            items.erase( items.begin()+ i ); //destruir item
+            i--; //hay un elemento menos en el vector
+        }
+    }
 }
 
 //Revisa si le quedan vidas al jugador
@@ -571,7 +729,10 @@ void check_dead_enemies()
 	{
 		if(enemigos[i].vidas <= 0)
 		{
-			enemigos.erase(enemigos.begin() + i);
+
+		    el_jugador->score += (enemigos[i].radio_hitbox * 10); //incrementa el score del jugador
+		    cout<<"Score: "<<el_jugador->score<<endl;
+			enemigos.erase(enemigos.begin()+i);
 			i--; //hay un elemento menos en el vector
 		}
 	}

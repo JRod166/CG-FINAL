@@ -12,7 +12,7 @@ public:
     int tipo; //determina el movimiento del proyectil
     float velocidad;
     pair<float,float> direccion;
-    Proyectil(float x, float y, int type);
+    Proyectil(float x, float y, int type, float dir_x=0, float dir_y=0);
     void mover(float, float);
     void dibujar();
 };

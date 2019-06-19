@@ -40,11 +40,11 @@ Enemigo::Enemigo(float x, float y, int type)
   }
 }
 //El enemigo dispara un proyectil
-Proyectil Enemigo::disparar()
+Proyectil Enemigo::disparar(float dir_x, float dir_y)
 {
+
   //proyectiles_enemigos.push_back(Proyectil(centro.first,centro.second,tipo));
-  return Proyectil(centro.first,centro.second,tipo);
-}
+  return Proyectil(centro.first,centro.second,tipo);}
 
 //Dibujar enemigo
 void Enemigo::dibujar()
@@ -57,13 +57,13 @@ void Enemigo::dibujar()
   float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
   glTexCoord2f(0.5+0.5*state,0.333333*factor);
-  glVertex3f(x+radio_hitbox*3, y-radio_hitbox*3,1); //bottom-right
+  glVertex3f(x+radio_hitbox, y-radio_hitbox,1); //bottom-right
   glTexCoord2f(0.5+0.5*state,0.333333*(factor+1));
-  glVertex3f(x+radio_hitbox*3, y+radio_hitbox*3,1); //top-right
+  glVertex3f(x+radio_hitbox, y+radio_hitbox,1); //top-right
   glTexCoord2f(0+0.5*state,0.333333*(factor+1));
-  glVertex3f(x-radio_hitbox*3, y+radio_hitbox*3,1); //top-left
+  glVertex3f(x-radio_hitbox, y+radio_hitbox,1); //top-left
   glTexCoord2f(0+0.5*state,0.333333*factor);
-  glVertex3f(x-radio_hitbox*3, y-radio_hitbox*3,1); //bottom-left
+  glVertex3f(x-radio_hitbox, y-radio_hitbox,1); //bottom-left
   glEnd();
   glDisable(GL_BLEND);
 }
