@@ -25,6 +25,12 @@ Item::Item(float x, float y, int type)
         radio_hitbox = 10;
         velocidad = 50;
     }
+    //mejora del disparo
+    else if(tipo==4)
+    {
+        radio_hitbox = 10;
+        velocidad = 50;
+    }
 }
 
 
@@ -74,8 +80,17 @@ void Item::dibujar()
       glTexCoord2f(0.50,1-0.372093);
       glVertex3f(x-radio_hitbox, y-radio_hitbox,-1); //bottom-left
       break;
+    case (4): //mejora de disparo
+      glTexCoord2f(0.592593,1-0.372093);
+      glVertex3f(x+radio_hitbox, y-radio_hitbox,-1);   //bottom-right
+      glTexCoord2f(0.592593,1-0.186047);
+      glVertex3f(x+radio_hitbox, y+radio_hitbox,-1); //top-right
+      glTexCoord2f(0.50,1-0.186047);
+      glVertex3f(x-radio_hitbox, y+radio_hitbox,-1); //top-left
+      glTexCoord2f(0.50,1-0.372093);
+      glVertex3f(x-radio_hitbox, y-radio_hitbox,-1); //bottom-left
+      break;
   }
   glEnd();
   glDisable(GL_BLEND);
 }
-

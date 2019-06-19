@@ -615,6 +615,12 @@ void aplicar_buff(int tipo)
             el_jugador->radio_hitbox--;
         }
     }
+	//mejora de disparo
+    else if(tipo==4)
+    {
+        el_jugador->disparo_upgrade = true;
+        cout<<"Disparo mejorado"<<endl;
+    }
     //atrapar un item aumenta la puntuacion
     el_jugador->score += 20;
     cout<<"Score: "<<el_jugador->score<<endl;
