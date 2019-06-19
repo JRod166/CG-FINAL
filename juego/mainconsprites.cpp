@@ -339,10 +339,10 @@ void display_game()
     glEnd();
     glPopMatrix();
       ///nivel face
-    if (flag_recalc_delay == 0) {
+    //if (flag_recalc_delay == 0) {
       /* code */
-      nivel_1();
-    }
+      //nivel_1();
+    //}
     //nivel_2(), etc
 
     ////parte movible
@@ -486,7 +486,7 @@ GLvoid window_idle()
     if (reload_time > 0) {
         reload_time--;
       }
-    glutPostRedisplay();
+    //glutPostRedisplay();
 }
 
 void mover_proyectiles() {

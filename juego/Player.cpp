@@ -78,7 +78,6 @@ void Player::dibujar()
   float top,bottom,left,right;
   left=0.125*(int(reimu_time/250));
   right=0.125+0.125*(int(reimu_time/250));
-  cout<<int(reimu_time/250)<<endl;
   glBegin(GL_QUADS);
   switch (reimustate)
   {
