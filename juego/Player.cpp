@@ -74,50 +74,38 @@ void Player::dibujar()
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
   glEnable(GL_BLEND);//utilizar transparencia
   float x = centro.first, y = centro.second;
+  float top,bottom,left,right;
+  left=0.125*(int(reimu_time/250));
+  right=0.125+0.125*(int(reimu_time/250));
+  cout<<int(reimu_time/250)<<endl;
   glBegin(GL_QUADS);
   switch (reimustate)
   {
     case (0): //static
-      glTexCoord2f(0.111111,1-0.186047);
-      glVertex3f(x+16, y-18,-1);   //bottom-right
-      glTexCoord2f(0.111111,1);
-      glVertex3f(x+16, y+18,-1); //top-right
-      glTexCoord2f(0,1);
-      glVertex3f(x-16, y+18,-1); //top-left
-      glTexCoord2f(0,1-0.186047);
-      glVertex3f(x-16, y-18,-1); //bottom-left
+      top=1;
+      bottom=0.666666;
       break;
     case (1): //Shoot
-      glTexCoord2f(0.407407,1-0.186047);
-      glVertex3f(x+16, y-18,-1);   //bottom-right
-      glTexCoord2f(0.407407,1);
-      glVertex3f(x+16, y+18,-1); //top-right
-      glTexCoord2f(0.296296,1);
-      glVertex3f(x-16, y+18,-1); //top-left
-      glTexCoord2f(0.296296,1-0.186047);
-      glVertex3f(x-16, y-18,-1); //bottom-left
+      top=1;
+      bottom=0.666666;
       break;
     case (2): //left
-      glTexCoord2f(0.592593,1-0.372093);
-      glVertex3f(x+16, y-18,-1);   //bottom-right
-      glTexCoord2f(0.592593,1-0.186047);
-      glVertex3f(x+16, y+18,-1); //top-right
-      glTexCoord2f(0.50,1-0.186047);
-      glVertex3f(x-16, y+18,-1); //top-left
-      glTexCoord2f(0.50,1-0.372093);
-      glVertex3f(x-16, y-18,-1); //bottom-left
+      top=0.666666;
+      bottom=0.333333;
       break;
     case (3): //right
-    glTexCoord2f(0.592593,1-0.558140);
-    glVertex3f(x+16, y-18,-1);   //bottom-right
-    glTexCoord2f(0.592593,1-0.372093);
-    glVertex3f(x+16, y+18,-1); //top-right
-    glTexCoord2f(0.50,1-0.372093);
-    glVertex3f(x-16, y+18,-1); //top-left
-    glTexCoord2f(0.50,1-0.558140);
-    glVertex3f(x-16, y-18,-1); //bottom-left
+      top=0.333333;
+      bottom=0;
       break;
   }
+  glTexCoord2f(right,bottom);
+  glVertex3f(x+16, y-18,-1);   //bottom-right
+  glTexCoord2f(right,top);
+  glVertex3f(x+16, y+18,-1); //top-right
+  glTexCoord2f(left,top);
+  glVertex3f(x-16, y+18,-1); //top-left
+  glTexCoord2f(left,bottom);
+  glVertex3f(x-16, y-18,-1); //bottom-left
   glEnd();
   glDisable(GL_BLEND);
 }

@@ -37,6 +37,6 @@ extern GLuint bullet;
 extern GLuint bg;
 extern GLuint red;
 extern int reimustate;
-extern int reimu_time;
+extern float reimu_time;
 
 #endif

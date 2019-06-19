@@ -31,6 +31,7 @@ void check_collisions();    ///1
 bool player_is_alive();     //future work
 void drawGameStats();
 void check_dead_enemies();    ///2
+int direccion=delay_time;
 
 //Funcion que dispara la funcion del thread cada cierto intervalo de milisegundos
 void timer_start(std::function<void(void)> func, unsigned int interval)
@@ -349,7 +350,6 @@ void display_game()
     drawGameStats();
 
 
-
 	//Dibujamos los enemigos en juegos
 	dibujar_enemigos();
 
@@ -358,7 +358,6 @@ void display_game()
 
   //Dibujar_proyectiles
 	dibujar_proyectiles();
-
 	dibujar_items();
 
 	glutPostRedisplay();
@@ -426,20 +425,25 @@ void init_scene()
 
 }
 
-
-
 //Function called on each frame
 GLvoid window_idle()
 {
-    if(left_pressed)
-    {reimustate=2;
-    reimu_time=5;}
-    if(right_pressed)
-    {reimustate=3;
-    reimu_time=5;}
-    if(reimu_time>0)
+    if(reimu_time<=0)
     {
-      reimu_time--;
+      direccion=1;
+    }
+    if(reimu_time>=2000)
+    {
+      direccion=-1;
+    }
+    reimu_time+=direccion;
+    if(left_pressed)
+    {
+      reimustate=2;
+    }
+    else if(right_pressed)
+    {
+      reimustate=3;
     }
     else
     {
@@ -456,7 +460,7 @@ GLvoid window_idle()
         {
             mis_proyectiles.push_back(el_jugador->disparar());
             reimustate=1;
-            reimu_time=5;
+            reimu_time=14;
             reload_time = int(1/delay_time);
         }
         else

@@ -20,7 +20,7 @@ int reimustate=0;
 2=Left move
 3=right move
 */
-int reimu_time=0;
+float reimu_time=0;
 
 float normal_vector(float x, float y)
 {
