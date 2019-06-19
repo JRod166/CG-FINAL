@@ -25,6 +25,12 @@ Item::Item(float x, float y, int type)
         radio_hitbox = 10;
         velocidad = 50;
     }
+    //mejora del disparo
+    else if(tipo==4)
+    {
+        radio_hitbox = 10;
+        velocidad = 50;
+    }
 }
 
 
