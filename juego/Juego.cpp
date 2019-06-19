@@ -7,6 +7,8 @@ vector<Enemigo> enemigos;
 int currently_lvl = 1;
 long long level_it = 0;
 long long phase = 750;
+vector<Item> items;
+
 
 void nivel_1() {
   //creamos unos enmigos de prueba

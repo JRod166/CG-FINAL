@@ -3,6 +3,7 @@
 
 #include "Player.h"
 #include "Enemigo.h"
+#include "Item.h"
 
 extern Player *el_jugador;
 extern vector<Proyectil> mis_proyectiles;
@@ -13,6 +14,7 @@ extern int next_part_time;
 extern float np_average_time;
 extern long long level_it;
 extern long long phase;
+extern vector<Item> items;
 
 extern void gen_meteor(pair<float, float> inicio, pair<float, float> final);
 extern void gen_meteor_rain(int meteors);

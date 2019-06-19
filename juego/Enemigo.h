@@ -26,3 +26,5 @@ public:
     Proyectil disparar();
     void dibujar();
 };
+
+#endif

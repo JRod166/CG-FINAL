@@ -256,7 +256,7 @@ int main(int argc, char **argv)
 	//los enemigos disparan cada  segundo
 
 	timer_start(enemigos_disparan, 300);
-	
+
 	//creamos unos items de prueba
 	items.push_back(Item(200,200,1)); //vida extra
 	items.push_back(Item(-200,200,2)); //mas velocidad
@@ -338,7 +338,7 @@ void display_game()
 	mover_items();
     check_collisions();
     check_dead_enemies();
-    
+
 
     //Dibujar al jugador
 	el_jugador -> dibujar();
@@ -348,9 +348,9 @@ void display_game()
 
 	//Dibujar_proyectiles
 	dibujar_proyectiles();
-	
+
 	dibujar_items();
-	
+
 	glutPostRedisplay();
 }
 
@@ -439,8 +439,8 @@ GLvoid window_display()
 
 	//Dibujar los stats del juego
 	//drawGameStats();
-	
-	
+
+
 
 
 	glutSwapBuffers();
@@ -565,42 +565,45 @@ void dibujar_enemigos()
 //Ordena a todos los enemigos que disparen
 void enemigos_disparan()
 {
-    for(int i=0; i<enemigos.size(); i++)
-    {
-      if (enemigos[i].tipo % 10 != 0) {
-        if (enemigos[i].e_state.first == 0) {
-          /* code */
-          proyectiles_enemigos.push_back(enemigos[i].disparar());
-          enemigos[i].e_state.first = 1;
-          enemigos[i].e_state.second = 30;
-          if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo > 2 &&
-          proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo < 10)
-          {
-            float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
-            float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
-            proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
-            proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
-          }
-
-//Funcion que mueve todos los items
-void mover_items()
-{
-    for (int i = 0; i < items.size();)
-    {
-        items[i].mover();
-        if( abs(items[i].centro.second) > lim_y)
+  for(int i=0; i<enemigos.size(); i++)
+  {
+    if (enemigos[i].tipo % 10 != 0) {
+      if (enemigos[i].e_state.first == 0) {
+        /* code */
+        proyectiles_enemigos.push_back(enemigos[i].disparar());
+        enemigos[i].e_state.first = 1;
+        enemigos[i].e_state.second = 30;
+        if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo > 2 &&
+        proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo < 10)
         {
-            items.erase(items.begin() + i);
-        }
-        else
-        {
-            ++i;
-
+          float x=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.first;
+          float y=proyectiles_enemigos[proyectiles_enemigos.size()-1].centro.second;
+          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first = el_jugador->centro.first - x;
+          proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second = el_jugador->centro.second - y;
         }
       }
     }
-    //else if(currently_lvl == 2) {} //etc
+  }
 }
+//Funcion que mueve todos los items
+void mover_items()
+{
+  for (int i = 0; i < items.size();)
+  {
+    items[i].mover();
+    if( abs(items[i].centro.second) > lim_y)
+    {
+      items.erase(items.begin() + i);
+    }
+    else
+    {
+      ++i;
+
+    }
+  }
+}
+//else if(currently_lvl == 2) {} //etc
+
 
 //Dibuja todos los items en juego
 void dibujar_items()
