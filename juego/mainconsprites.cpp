@@ -318,8 +318,7 @@ void display_game()
     glPopMatrix();
     ///nivel face
     if (currently_lvl== 1) {
-      cout<<enemigos.size()<<endl;
-
+      cout<<phase<<"->";
       nivel_1();
     }
     //nivel_2(), etc
