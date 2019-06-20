@@ -12,9 +12,10 @@ extern vector<Enemigo> enemigos;
 extern int currently_lvl;
 extern int next_part_time;
 extern float np_average_time;
-extern long long level_it;
+extern float level_it;
 extern long long phase;
 extern vector<Item> items;
+extern int cont_phase;
 
 extern void gen_meteor(pair<float, float> inicio, pair<float, float> final);
 extern void gen_meteor_rain(int meteors);
