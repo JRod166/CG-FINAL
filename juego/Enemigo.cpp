@@ -29,6 +29,11 @@ Enemigo::Enemigo(float x, float y, int type)
       radio_hitbox = 15;
       vidas = 5;
     }
+    else if(tipo==10)
+    {
+      radio_hitbox = 7;
+      vidas=3;
+    }
     velocidad = 15;
 }
 //El enemigo dispara un proyectil
@@ -41,23 +46,56 @@ Proyectil Enemigo::disparar()
 //Dibujar enemigo
 void Enemigo::dibujar()
 {
-  int state = e_state.first;
-  glBindTexture(GL_TEXTURE_2D,fairy);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
-  glEnable(GL_BLEND);//utilizar transparencia
-  int factor=tipo-1;
-  float x = centro.first, y = centro.second;
-  glBegin(GL_QUADS);
-  glTexCoord2f(0.5+0.5*state,0.333333*factor);
-  glVertex3f(x+radio_hitbox*2, y-radio_hitbox*2,1-(tipo*0.1)); //bottom-right
-  glTexCoord2f(0.5+0.5*state,0.333333*(factor+1));
-  glVertex3f(x+radio_hitbox*2, y+radio_hitbox*2,1-(tipo*0.1)); //top-right
-  glTexCoord2f(0+0.5*state,0.333333*(factor+1));
-  glVertex3f(x-radio_hitbox*2, y+radio_hitbox*2,1-(tipo*0.1)); //top-left
-  glTexCoord2f(0+0.5*state,0.333333*factor);
-  glVertex3f(x-radio_hitbox*2, y-radio_hitbox*2,1-(tipo*0.1)); //bottom-left
-  glEnd();
-  glDisable(GL_BLEND);
+  int state = int(e_state.first/250);
+  if(tipo%10!=0)
+  {
+    if(state>=7)
+    {
+      e_state.first=0;
+    }
+    glBindTexture(GL_TEXTURE_2D,fairy);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+    glEnable(GL_BLEND);//utilizar transparencia
+    int factor=tipo-1;
+    float x = centro.first, y = centro.second;
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.1666666+0.1666666*state,0.2*factor);
+    glVertex3f(x+radio_hitbox*2, y-radio_hitbox*2,1-(tipo*0.1)); //bottom-right
+    glTexCoord2f(0.1666666+0.1666666*state,0.2*(factor+1));
+    glVertex3f(x+radio_hitbox*2, y+radio_hitbox*2,1-(tipo*0.1)); //top-right
+    glTexCoord2f(0+0.1666666*state,0.2*(factor+1));
+    glVertex3f(x-radio_hitbox*2, y+radio_hitbox*2,1-(tipo*0.1)); //top-left
+    glTexCoord2f(0.1666666*state,0.2*factor);
+    glVertex3f(x-radio_hitbox*2, y-radio_hitbox*2,1-(tipo*0.1)); //bottom-left
+    glEnd();
+    glDisable(GL_BLEND);
+  }
+  else
+  {
+    float a=mov_type[0];
+    float b=mov_type[1];
+    //float c= sqrt((a*a)+(b*b));
+    //sin theta = a/c
+    float theta=atan(b/a)*180/PI;
+    glBindTexture(GL_TEXTURE_2D,meteor);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+    glEnable(GL_BLEND);//utilizar transparencia
+    int factor=tipo-1;
+    float x = centro.first, y = centro.second;
+    glBegin(GL_QUADS);
+    state=1;
+    factor=1;
+    glTexCoord2f(1,0);
+    glVertex3f(x+radio_hitbox*2, y-radio_hitbox*2,1-(theta*0.01)); //bottom-right
+    glTexCoord2f(1,1);
+    glVertex3f(x+radio_hitbox*2, y+radio_hitbox*2,1-(theta*0.01)); //top-right
+    glTexCoord2f(0,1);
+    glVertex3f(x-radio_hitbox*2, y+radio_hitbox*2,1-(theta*0.01)); //top-left
+    glTexCoord2f(0,0);
+    glVertex3f(x-radio_hitbox*2, y-radio_hitbox*2,1-(theta*0.01)); //bottom-left
+    glEnd();
+    glDisable(GL_BLEND);
+  }
 }
 
 ///Mover enemigos

@@ -13,7 +13,7 @@ bool down_pressed = false;
 bool left_pressed = false;
 bool right_pressed = false;
 bool fire_pressed = false;
-GLuint reimu,fairy,bullet,red,bg;
+GLuint reimu,fairy,bullet,red,bg,meteor;
 int reimustate=0;
 /*  0=static
 1=Shoot

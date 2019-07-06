@@ -1,6 +1,9 @@
 #ifndef ENEMIGO_H
 #define ENEMIGO_H
 
+
+#define PI 3.14159265
+
 #include "Proyectil.h"
 
 class Enemigo

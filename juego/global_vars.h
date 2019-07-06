@@ -13,6 +13,8 @@
 #include <FreeImage.h>
 #include <math.h>
 #include <iostream>
+#include <SFML/Audio.hpp>
+#include <SFML/System.hpp>
 
 using namespace std;
 
@@ -35,6 +37,7 @@ extern GLuint fairy;
 extern GLuint bullet;
 extern GLuint bg;
 extern GLuint red;
+extern GLuint meteor;
 extern int reimustate;
 extern float reimu_time;
 

@@ -11,8 +11,8 @@ vector<Item> items;
 int cont_phase=0;
 
 void nivel_1() {
+  //cout<<cont_phase<<endl;
   //creamos unos enmigos de prueba
-  cout<<level_it<<endl;
   if (level_it == 0 && cont_phase==0) {
     cont_phase++;
     for (int i = 0; i < 10; i++) {
@@ -57,7 +57,7 @@ void nivel_1() {
       go_horizontal(enemigos[enemigos.size() - 1], -6);
     }
     for (int i = 0; i < 10; i++) {
-      enemigos.push_back(Enemigo(-350 - i * 20, 100, 2));
+      enemigos.push_back(Enemigo(-350 - i * 20, 125, 2));
       go_horizontal(enemigos[enemigos.size() - 1], 6);
     }
     for (int i = 0; i < 10; i++) {
@@ -65,7 +65,7 @@ void nivel_1() {
       go_horizontal(enemigos[enemigos.size() - 1], -6);
     }
     for (int i = 0; i < 10; i++) {
-      enemigos.push_back(Enemigo(-350 - i * 20, 150, 2));
+      enemigos.push_back(Enemigo(-350 - i * 20, 175, 2));
       go_horizontal(enemigos[enemigos.size() - 1], 6);
     }
     for (int i = 0; i < 10; i++) {
@@ -73,12 +73,12 @@ void nivel_1() {
       go_horizontal(enemigos[enemigos.size() - 1], -6);
     }
     for (int i = 0; i < 10; i++) {
-      enemigos.push_back(Enemigo(-350 - i * 20, 200, 2));
+      enemigos.push_back(Enemigo(-350 - i * 20, 225, 2));
       go_horizontal(enemigos[enemigos.size() - 1], 6);
     }
 
   }
-  else if(level_it >=( phase * 4 + 400) && cont_phase==5) {
+  else if(level_it >=( phase * 4 + 10) && cont_phase==5) {
     cont_phase++;
     enemigos.clear();
     proyectiles_enemigos.clear();

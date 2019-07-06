@@ -236,6 +236,14 @@ int main(int argc, char **argv)
   bullet=LoadTexture("bullets.png",GL_BGRA_EXT,GL_RGBA);
   bg=LoadTexture("space.png",GL_BGR,GL_RGB);
   red=LoadTexture("red.jpeg",GL_BGR,GL_RGB);
+  meteor=LoadTexture("meteor.png",GL_BGRA_EXT,GL_RGBA);
+
+  ///musica
+  sf::SoundBuffer buffer;
+  buffer.loadFromFile("mindless.ogg");
+  sf::Sound sound;
+  sound.setBuffer(buffer);
+  sound.play();
 
 
 	///INICIALIZAR EL JUEGO
@@ -318,7 +326,7 @@ void display_game()
     glPopMatrix();
     ///nivel face
     if (currently_lvl== 1) {
-      cout<<phase<<"->";
+
       nivel_1();
     }
     //nivel_2(), etc
@@ -426,14 +434,7 @@ GLvoid window_idle()
 
     for(int i=0;i<enemigos.size();i++)
     {
-      if(enemigos[i].e_state.second > 0)
-      {
-        enemigos[i].e_state.second--;
-      }
-      else
-      {
-        enemigos[i].e_state.first=0;
-      }
+      enemigos[i].e_state.first+=1;
     }
     //Para disparar, se requiere una recarga de 10 ciclos
     if(fire_pressed == true)
@@ -511,12 +512,10 @@ void enemigos_disparan()
 {
   for(int i=0; i<enemigos.size(); i++)
   {
-    if (enemigos[i].tipo % 10 != 0) {
-      if (enemigos[i].e_state.first == 0) {
+    if (enemigos[i].tipo % 10 != 0)
+    {
         /* code */
         proyectiles_enemigos.push_back(enemigos[i].disparar());
-        enemigos[i].e_state.first = 1;
-        enemigos[i].e_state.second = 30;
         if(proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo > 2 &&
         proyectiles_enemigos[proyectiles_enemigos.size()-1].tipo < 10)
         {
@@ -525,7 +524,6 @@ void enemigos_disparan()
             proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.first=el_jugador->centro.first-x;
             proyectiles_enemigos[proyectiles_enemigos.size()-1].direccion.second=el_jugador->centro.second-y;
         }
-      }
     }
   }
 }
