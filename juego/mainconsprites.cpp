@@ -1,6 +1,6 @@
 #define GLUT_DISABLE_ATEXIT_HACK
 
-///g++ -o main mainconsprites.cpp Player.cpp Juego.cpp Enemigo.cpp Proyectil.cpp global_vars.cpp Item.cpp -lGL -lGLU -lglut -lfreeimage -pthread
+///g++ -o main mainconsprites.cpp Player.cpp Juego.cpp Enemigo.cpp Proyectil.cpp global_vars.cpp Item.cpp -lGL -lGLU -lglut -lfreeimage -pthread -lsfml-audio
 
 #include "Juego.h"
 
@@ -237,15 +237,34 @@ int main(int argc, char **argv)
   bg=LoadTexture("space.png",GL_BGR,GL_RGB);
   red=LoadTexture("red.jpeg",GL_BGR,GL_RGB);
   meteor=LoadTexture("meteor.png",GL_BGRA_EXT,GL_RGBA);
+  item=LoadTexture("item.png",GL_BGRA_EXT,GL_RGBA);
 
   ///musica
   sf::SoundBuffer buffer;
-  buffer.loadFromFile("mindless.ogg");
-  sf::Sound sound;
+  buffer.loadFromFile("sss.ogg");
   sound.setBuffer(buffer);
+  sound.setLoop(true);
+  sound.setVolume(40.f);
   sound.play();
-
-
+  sf::SoundBuffer shootbuffer;
+  shootbuffer.loadFromFile("shoot.wav");
+  shoot.setBuffer(shootbuffer);
+  shoot.setVolume(15.f);
+  sf::SoundBuffer destroybuffer;
+  destroybuffer.loadFromFile("destroy.wav");
+  destroy.setBuffer(destroybuffer);
+  destroy.setVolume(50.f);
+  sf::SoundBuffer diebuffer;
+  diebuffer.loadFromFile("die.ogg");
+  die.setBuffer(diebuffer);
+  die.setVolume(100.f);
+  sf::SoundBuffer gameOverBuffer;
+  gameOverBuffer.loadFromFile("gameover.ogg");
+  gameOver.setBuffer(gameOverBuffer);
+  gameOver.setVolume(100.f);
+  sf::SoundBuffer itembuffer;
+  itembuffer.loadFromFile("item.wav");
+  itempick.setBuffer(itembuffer);
 	///INICIALIZAR EL JUEGO
 
 	//los enemigos disparan cada  segundo
@@ -324,6 +343,23 @@ void display_game()
     glVertex3f(-350,-350,10); //bottom-left
     glEnd();
     glPopMatrix();
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+    char string[10];
+    strcpy(string,fit_size(el_jugador->score,10).c_str());
+    glRasterPos2f(100,225);
+    //glColor3f(1., 0., 0.);
+    glPushMatrix();
+    glColor4f(0,1,0,0);
+      int len = 10;
+      for (int i = 0; i < len; i++) {
+          glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+      }
+    glPopMatrix();
+    glColor4f(1, 1, 1, 1);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
     ///nivel face
     if (currently_lvl== 1) {
 
@@ -355,6 +391,9 @@ void display_game()
 //Dibuja la pantalla de Game over
 void display_game_over()
 {
+    sound.stop();
+    die.stop();
+    gameOver.play();
     //display back_ground de game over
 }
 
@@ -569,6 +608,7 @@ float distancia(pair<float,float> p1, pair<float,float> p2)
 //Funcion auxiliar para check_collision, aplica la bonificacion de un item al jugador
 void aplicar_buff(int tipo)
 {
+    itempick.play();
     //vida extra
     if(tipo==1)
     {
@@ -614,6 +654,7 @@ void check_collisions()
 		{
 			el_jugador->vidas--; //el jugador pierde una vida
 			cout<<"El jugador ha perdido una vida porque le dio una bala."<<endl;
+      die.play();
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
 			mis_proyectiles.clear();
 			el_jugador->reset(); //el jugador regresa a su estado inicial
@@ -642,6 +683,7 @@ void check_collisions()
 		if( distancia_entre_centros < (el_jugador->radio_hitbox + enemigos[i].radio_hitbox) )
 		{
 			el_jugador->vidas--; //el jugador pierde una vida
+      die.play();
 			cout<<"El jugador ha perdido una vida porque se choco con un enemigo."<<endl;
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
 			mis_proyectiles.clear();
@@ -677,6 +719,7 @@ void check_dead_enemies()
 		    el_jugador->score += (enemigos[i].radio_hitbox * 10); //incrementa el score del jugador
 		    cout<<"Score: "<<el_jugador->score<<endl;
 			enemigos.erase(enemigos.begin()+i);
+      destroy.play();
 			i--; //hay un elemento menos en el vector
 		}
 	}

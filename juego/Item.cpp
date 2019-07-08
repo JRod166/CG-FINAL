@@ -43,44 +43,19 @@ void Item::mover()
 //Provisional, reemplazar con los sprites de items
 void Item::dibujar()
 {
-  glBindTexture(GL_TEXTURE_2D,reimu);
+  glBindTexture(GL_TEXTURE_2D,item);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
   glEnable(GL_BLEND);//utilizar transparencia
   float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
-  switch (tipo)
-  {
-    case (1): //vida extra
-      glTexCoord2f(0.111111,1-0.186047);
-      glVertex3f(x+radio_hitbox, y-radio_hitbox,-3-(tipo*0.1));   //bottom-right
-      glTexCoord2f(0.111111,1);
-      glVertex3f(x+radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-right
-      glTexCoord2f(0,1);
-      glVertex3f(x-radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-left
-      glTexCoord2f(0,1-0.186047);
-      glVertex3f(x-radio_hitbox, y-radio_hitbox,-3-(tipo*0.1)); //bottom-left
-      break;
-    case (2): //mas velocidad
-      glTexCoord2f(0.407407,1-0.186047);
-      glVertex3f(x+radio_hitbox, y-radio_hitbox,-3-(tipo*0.1));   //bottom-right
-      glTexCoord2f(0.407407,1);
-      glVertex3f(x+radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-right
-      glTexCoord2f(0.296296,1);
-      glVertex3f(x-radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-left
-      glTexCoord2f(0.296296,1-0.186047);
-      glVertex3f(x-radio_hitbox, y-radio_hitbox,-3-(tipo*0.1)); //bottom-left
-      break;
-    case (3): //evasion(hit_box reducido)
-      glTexCoord2f(0.592593,1-0.372093);
-      glVertex3f(x+radio_hitbox, y-radio_hitbox,-3-(tipo*0.1));   //bottom-right
-      glTexCoord2f(0.592593,1-0.186047);
-      glVertex3f(x+radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-right
-      glTexCoord2f(0.50,1-0.186047);
-      glVertex3f(x-radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-left
-      glTexCoord2f(0.50,1-0.372093);
-      glVertex3f(x-radio_hitbox, y-radio_hitbox,-3-(tipo*0.1)); //bottom-left
-      break;
-  }
+  glTexCoord2f(0.25*tipo,0);
+  glVertex3f(x+radio_hitbox, y-radio_hitbox,-3-(tipo*0.1));   //bottom-right
+  glTexCoord2f(0.25*tipo,1);
+  glVertex3f(x+radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-right
+  glTexCoord2f(0.25*(tipo-1),1);
+  glVertex3f(x-radio_hitbox, y+radio_hitbox,-3-(tipo*0.1)); //top-left
+  glTexCoord2f(0.25*(tipo-1),0);
+  glVertex3f(x-radio_hitbox, y-radio_hitbox,-3-(tipo*0.1)); //bottom-left
   glEnd();
   glDisable(GL_BLEND);
 }

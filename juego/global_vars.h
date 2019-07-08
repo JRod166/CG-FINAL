@@ -9,6 +9,8 @@
 #include <vector>
 #include <thread>
 
+#include <string>
+
 #include <GL/glut.h>
 #include <FreeImage.h>
 #include <math.h>
@@ -26,6 +28,7 @@ extern int timebase;
 extern int reload_time;
 extern float default_guided_lifetime;
 extern float normal_vector(float x, float y);
+extern string fit_size(int,int);
 //Estado de las teclas(presionada o no)
 extern bool up_pressed ;
 extern bool down_pressed ;
@@ -38,7 +41,9 @@ extern GLuint bullet;
 extern GLuint bg;
 extern GLuint red;
 extern GLuint meteor;
+extern GLuint item;
 extern int reimustate;
 extern float reimu_time;
+extern sf::Sound shoot,destroy,gameOver,die,sound,itempick;
 
 #endif

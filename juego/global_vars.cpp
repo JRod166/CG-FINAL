@@ -8,12 +8,13 @@ int timebase = 0;
 int reload_time = 0;
 float default_guided_lifetime = 30;
 
+sf::Sound shoot,destroy,gameOver,die,sound,itempick;
 bool up_pressed = false;
 bool down_pressed = false;
 bool left_pressed = false;
 bool right_pressed = false;
 bool fire_pressed = false;
-GLuint reimu,fairy,bullet,red,bg,meteor;
+GLuint reimu,fairy,bullet,red,bg,meteor,item;
 int reimustate=0;
 /*  0=static
 1=Shoot
@@ -25,4 +26,15 @@ float reimu_time=0;
 float normal_vector(float x, float y)
 {
     return sqrt( pow(x,2) + pow(y,2) );
+}
+
+string fit_size(int score,int tam)
+{
+  string aux=to_string(score);
+  while(aux.size()<tam)
+  {
+    aux='0'+aux;
+  }
+  return aux;
+
 }

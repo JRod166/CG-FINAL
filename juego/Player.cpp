@@ -66,6 +66,7 @@ void Player::mover()
 //El jugador dispara municiones
 Proyectil Player::disparar()
 {
+    shoot.play();
     return Proyectil(centro.first,centro.second,1);
 }
 
