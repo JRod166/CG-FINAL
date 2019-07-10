@@ -8,7 +8,7 @@ class Proyectil
 {
 public:
     pair<float,float> centro; //x,y
-    int radio_hitbox;
+    float radio_hitbox;
     int tipo; //determina el movimiento del proyectil
     float velocidad;
     pair<float,float> direccion;

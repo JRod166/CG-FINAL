@@ -225,11 +225,13 @@ GLvoid window_keyUp(unsigned char key, int x, int y)
   }
   if( key == SP && el_jugador->bombs>=1)
   {
+    bombsound.play();
     for(int i=0;i<enemigos.size();i++)
     {
       enemigos[i].vidas-=5;
     }
     proyectiles_enemigos.clear();
+    mis_proyectiles.push_back(Proyectil(0,0,10));
     el_jugador->bombs--;
   }
 }
@@ -292,6 +294,9 @@ int main(int argc, char **argv)
   sf::SoundBuffer itembuffer;
   itembuffer.loadFromFile("item.wav");
   itempick.setBuffer(itembuffer);
+  sf::SoundBuffer bombuffer;
+  bombuffer.loadFromFile("bomb.wav");
+  bombsound.setBuffer(bombuffer);
 	///INICIALIZAR EL JUEGO
 
 	//los enemigos disparan cada  segundo
@@ -565,7 +570,7 @@ GLvoid window_display()
         enemigos.clear();
         mis_proyectiles.clear();
         proyectiles_enemigos.clear();
-        sound.stop();
+        sound.setVolume(10.f);
         die.stop();
         display_game_over();
     }
@@ -635,8 +640,8 @@ GLvoid window_idle()
             mis_proyectiles.push_back(el_jugador->disparar());
             if(el_jugador->disparo_upgrade)
             {
-              mis_proyectiles.push_back(Proyectil(el_jugador->centro.first-10,el_jugador->centro.second,1));
-              mis_proyectiles.push_back(Proyectil(el_jugador->centro.first+10,el_jugador->centro.second,1));
+              mis_proyectiles.push_back(Proyectil(el_jugador->centro.first-15,el_jugador->centro.second,1));
+              mis_proyectiles.push_back(Proyectil(el_jugador->centro.first+15,el_jugador->centro.second,1));
             }
             reimustate=1;
             reimu_time=14;
@@ -827,6 +832,10 @@ void check_collisions()
 			distancia_entre_centros = distancia( mis_proyectiles[j].centro, enemigos[i].centro );
 			if( distancia_entre_centros < (mis_proyectiles[j].radio_hitbox + enemigos[i].radio_hitbox) )
 			{
+        if(mis_proyectiles[j].tipo==10)
+        {
+          break;
+        }
 				enemigos[i].vidas--; //el enemigo pierde una vida
 				mis_proyectiles.erase( mis_proyectiles.begin()+j ); //destruir proyectil
 				j--; //hay un elemento menos en el vector

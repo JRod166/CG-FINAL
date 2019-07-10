@@ -28,7 +28,7 @@ Enemigo::Enemigo(float x, float y, int type)
     }
     else if(tipo == 5){
       radio_hitbox = 30;
-      vidas = 800;
+      vidas = 1200;
     }
     else if(tipo==10)
     {
@@ -48,6 +48,27 @@ Proyectil Enemigo::disparar()
 void Enemigo::dibujar()
 {
   int state = int(e_state.first/250);
+  if(tipo==5)
+  {
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+    glColor4f(1,0,0,0);
+    char string[4];
+    strcpy(string,fit_size(vidas,4).c_str());
+    glRasterPos2f(centro.first,centro.second-radio_hitbox*2);
+    //glColor3f(1., 0., 0.);
+    glPushMatrix();
+    glColor4f(0,1,0,0);
+      int len = 4;
+      for (int i = 0; i < len; i++) {
+          glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+      }
+    glPopMatrix();
+
+    glColor4f(1, 1, 1, 1);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+  }
   if(tipo%10!=0)
   {
     if(state>=7)

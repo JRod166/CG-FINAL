@@ -45,7 +45,7 @@ extern GLuint item;
 extern GLuint bomb;
 extern int reimustate;
 extern float reimu_time;
-extern sf::Sound shoot,destroy,gameOver,die,sound,itempick;
+extern sf::Sound shoot,destroy,gameOver,die,sound,itempick,bombsound;
 extern sf::SoundBuffer shootbuffer,empty;
 extern bool play_on;
 #endif

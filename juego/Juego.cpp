@@ -252,7 +252,7 @@ void nivel_3()
     go_horizontal(enemigos[0], -5);
     cont_phase++;
   }
-  if(enemigos.size()==0)
+  else if(enemigos.size()==0 && level_it>0)
   {
     for(int i=0;i<20;i++)
     {

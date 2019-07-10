@@ -8,7 +8,7 @@ int timebase = 0;
 int reload_time = 0;
 float default_guided_lifetime = 30;
 
-sf::Sound shoot,destroy,gameOver,die,sound,itempick;
+sf::Sound shoot,destroy,gameOver,die,sound,itempick,bombsound;
 sf::SoundBuffer shootbuffer,empty;
 bool up_pressed = false;
 bool down_pressed = false;
