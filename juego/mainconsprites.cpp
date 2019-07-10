@@ -14,6 +14,7 @@ using namespace std;
 #define ECHAP 27
 #define WINWIDTH 700
 #define CIRCLE_SEGMENTS 20
+#define SP 32
 void init_scene();
 void render_scene();
 GLvoid initGL();
@@ -23,6 +24,7 @@ GLvoid window_key(unsigned char key, int x, int y);
 //function called on each frame
 GLvoid window_idle();
 ///Luis functions
+int last_bomb=0;
 
 void drawLife(float x, float y);
 float distancia(pair<float,float> p1, pair<float,float> p2);
@@ -127,6 +129,10 @@ void dibujar_items();
 GLvoid callback_special(int key, int x, int y)
 {
   glMatrixMode(GL_PROJECTION);
+  if(!play_on)
+  {
+    return;
+  }
   if( key == GLUT_KEY_UP)
   {
       //movemos al jugador hacia arriba
@@ -159,6 +165,10 @@ GLvoid callback_special(int key, int x, int y)
 GLvoid callback_specialUp(int key, int x, int y)
 {
   glMatrixMode(GL_PROJECTION);
+  if(!play_on)
+  {
+    return;
+  }
   if( key == GLUT_KEY_UP)
   {
       //se detiene el movimiento hacia arriba
@@ -188,6 +198,10 @@ GLvoid callback_specialUp(int key, int x, int y)
 ///CUANDO SE PRESIONA UNA TECLA DE DISPARO
 GLvoid window_key(unsigned char key, int x, int y)
 {
+  if(!play_on)
+  {
+    return;
+  }
     if( key == 'z')
     {
         fire_pressed = true;
@@ -197,14 +211,27 @@ GLvoid window_key(unsigned char key, int x, int y)
 ///CUANDO SE DEJA DE PRESIONA LA TECLA DE DISPARO
 GLvoid window_keyUp(unsigned char key, int x, int y)
 {
-    if( key == 'z')
+  if(key==ECHAP)
+  {
+    exit(1);
+  }
+  if(!play_on)
+  {
+    return;
+  }
+  if( key == 'z')
+  {
+    fire_pressed = false;
+  }
+  if( key == SP && el_jugador->bombs>=1)
+  {
+    for(int i=0;i<enemigos.size();i++)
     {
-        fire_pressed = false;
+      enemigos[i].vidas-=5;
     }
-    if(key==ECHAP)
-    {
-      exit(1);
-    }
+    proyectiles_enemigos.clear();
+    el_jugador->bombs--;
+  }
 }
 
 GLvoid callback_mouse(int button, int state, int x, int y)
@@ -222,6 +249,7 @@ GLvoid callback_motion(int x, int y)
 
 int main(int argc, char **argv)
 {
+  srand(time(NULL));
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
@@ -238,7 +266,7 @@ int main(int argc, char **argv)
   red=LoadTexture("red.jpeg",GL_BGR,GL_RGB);
   meteor=LoadTexture("meteor.png",GL_BGRA_EXT,GL_RGBA);
   item=LoadTexture("item.png",GL_BGRA_EXT,GL_RGBA);
-
+  bomb=LoadTexture("bomb.png",GL_BGRA_EXT,GL_RGBA);
   ///musica
   sf::SoundBuffer buffer;
   buffer.loadFromFile("sss.ogg");
@@ -246,7 +274,6 @@ int main(int argc, char **argv)
   sound.setLoop(true);
   sound.setVolume(40.f);
   sound.play();
-  sf::SoundBuffer shootbuffer;
   shootbuffer.loadFromFile("shoot.wav");
   shoot.setBuffer(shootbuffer);
   shoot.setVolume(15.f);
@@ -344,6 +371,22 @@ void display_game()
     glEnd();
     glPopMatrix();
 
+    glBindTexture(GL_TEXTURE_2D,bomb);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);//funcion de transparencia
+    glEnable(GL_BLEND);//utilizar transparencia
+    float x = -140, y = -242;
+    glBegin(GL_QUADS);
+    glTexCoord2f(1,0);
+    glVertex3f(x+10, y-10,-3-(1*0.1));   //bottom-right
+    glTexCoord2f(1,1);
+    glVertex3f(x+10, y+10,-3-(1*0.1)); //top-right
+    glTexCoord2f(0,1);
+    glVertex3f(x-10, y+10,-3-(1*0.1)); //top-left
+    glTexCoord2f(0,0);
+    glVertex3f(x-10, y-10,-3-(1*0.1)); //bottom-left
+    glEnd();
+    glDisable(GL_BLEND);
+
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
     char string[10];
@@ -357,13 +400,93 @@ void display_game()
           glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
       }
     glPopMatrix();
+
+    char string_[2];
+    strcpy(string_,fit_size(el_jugador->bombs,1).c_str());
+    glRasterPos2f(-150,-225);
+    //glColor3f(1., 0., 0.);
+    glPushMatrix();
+    glColor4f(1,0,0,0);
+      len = 2;
+      for (int i = 0; i < len; i++) {
+          glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string_[i]);
+      }
+    glPopMatrix();
+
     glColor4f(1, 1, 1, 1);
     glEnable(GL_LIGHTING);
     glEnable(GL_TEXTURE_2D);
     ///nivel face
     if (currently_lvl== 1) {
-
+      glDisable(GL_LIGHTING);
+      glDisable(GL_TEXTURE_2D);
+      char string[8];
+      strcpy(string,"LEVEL 1");
+      glRasterPos2f(100,-225);
+      //glColor3f(1., 0., 0.);
+      glPushMatrix();
+      glColor4f(0,1,0,0);
+        int len = 8;
+        for (int i = 0; i < len; i++) {
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+        }
+      glPopMatrix();
+      glColor4f(1, 1, 1, 1);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_TEXTURE_2D);
       nivel_1();
+    }
+    else if(currently_lvl==2)
+    {
+      level_it=0;
+      currently_lvl++;
+    }
+    else if (currently_lvl==3){
+      glDisable(GL_LIGHTING);
+      glDisable(GL_TEXTURE_2D);
+      char string[8];
+      strcpy(string,"LEVEL 2");
+      glRasterPos2f(100,-225);
+      //glColor3f(1., 0., 0.);
+      glPushMatrix();
+      glColor4f(0,1,0,0);
+        int len = 8;
+        for (int i = 0; i < len; i++) {
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+        }
+      glPopMatrix();
+      glColor4f(1, 1, 1, 1);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_TEXTURE_2D);
+      nivel_2();
+    }
+    else if(currently_lvl==4)
+    {
+      level_it=0;
+      currently_lvl++;
+    }
+    else if (currently_lvl==5)
+    {
+      glDisable(GL_LIGHTING);
+      glDisable(GL_TEXTURE_2D);
+      char string[8];
+      strcpy(string,"LEVEL 3");
+      glRasterPos2f(100,-225);
+      //glColor3f(1., 0., 0.);
+      glPushMatrix();
+      glColor4f(0,1,0,0);
+        int len = 8;
+        for (int i = 0; i < len; i++) {
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+        }
+      glPopMatrix();
+      glColor4f(1, 1, 1, 1);
+      glEnable(GL_LIGHTING);
+      glEnable(GL_TEXTURE_2D);
+      nivel_3();
+    }
+    else if (currently_lvl==6)
+    {
     }
     //nivel_2(), etc
 
@@ -391,9 +514,28 @@ void display_game()
 //Dibuja la pantalla de Game over
 void display_game_over()
 {
-    sound.stop();
-    die.stop();
-    gameOver.play();
+  shoot.setBuffer(empty);
+  play_on=false;
+  glDisable(GL_LIGHTING);
+  glDisable(GL_TEXTURE_2D);
+  char string[10];
+  strcpy(string,"GAME OVER");
+  int w;
+  const unsigned char aux[10]="GAME OVER";
+  w = glutBitmapLength(GLUT_BITMAP_8_BY_13, aux);
+  glRasterPos2f(-w/2,0);
+  //glColor3f(1., 0., 0.);
+  glPushMatrix();
+  glColor4f(0,1,0,0);
+    int len = 10;
+    for (int i = 0; i < len; i++) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, string[i]);
+    }
+  glPopMatrix();
+  glColor4f(1, 1, 1, 1);
+  glEnable(GL_LIGHTING);
+  glEnable(GL_TEXTURE_2D);
+  gameOver.play();
     //display back_ground de game over
 }
 
@@ -423,6 +565,8 @@ GLvoid window_display()
         enemigos.clear();
         mis_proyectiles.clear();
         proyectiles_enemigos.clear();
+        sound.stop();
+        die.stop();
         display_game_over();
     }
 	glutSwapBuffers();
@@ -449,6 +593,14 @@ void init_scene()
 //Function called on each frame
 GLvoid window_idle()
 {
+    if(el_jugador->score -last_bomb > 1000)
+    {
+      last_bomb=el_jugador->score;
+      if(el_jugador->bombs<5)
+      {
+        el_jugador->bombs++;
+      }
+    }
     if(reimu_time<=0)
     {
       direccion=1;
@@ -481,6 +633,11 @@ GLvoid window_idle()
         if(reload_time <= 0)
         {
             mis_proyectiles.push_back(el_jugador->disparar());
+            if(el_jugador->disparo_upgrade)
+            {
+              mis_proyectiles.push_back(Proyectil(el_jugador->centro.first-10,el_jugador->centro.second,1));
+              mis_proyectiles.push_back(Proyectil(el_jugador->centro.first+10,el_jugador->centro.second,1));
+            }
             reimustate=1;
             reimu_time=14;
             reload_time = int(0.1/delay_time);
@@ -633,7 +790,7 @@ void aplicar_buff(int tipo)
 	//mejora de disparo
     else if(tipo==4)
     {
-        //el_jugador->disparo_upgrade = true;
+        el_jugador->disparo_upgrade = true;
         cout<<"Disparo mejorado"<<endl;
     }
     //atrapar un item aumenta la puntuacion
@@ -716,8 +873,12 @@ void check_dead_enemies()
 	{
 		if(enemigos[i].vidas <= 0)
 		{
-		    el_jugador->score += (enemigos[i].radio_hitbox * 10); //incrementa el score del jugador
-		    cout<<"Score: "<<el_jugador->score<<endl;
+		  el_jugador->score += (enemigos[i].radio_hitbox * 10); //incrementa el score del jugador
+		  cout<<"Score: "<<el_jugador->score<<endl;
+      if(rand()%10 == 0)
+      {
+        items.push_back(Item(enemigos[i].centro.first,enemigos[i].centro.second,(rand()%4)+1));
+      }
 			enemigos.erase(enemigos.begin()+i);
       destroy.play();
 			i--; //hay un elemento menos en el vector

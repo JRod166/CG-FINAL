@@ -28,6 +28,11 @@ Proyectil::Proyectil(float x, float y, int type, float dir_x, float dir_y)
       radio_hitbox = 1;
       velocidad = 150;
     }
+    else if (tipo==5)
+    {
+      radio_hitbox = 3;
+      velocidad= 150;
+    }
 }
 
 void Proyectil::mover(float x, float y)
@@ -50,7 +55,7 @@ void Proyectil::mover(float x, float y)
       centro.second += velocidad * direccion.second * delay_time / normal;
   }
   //proyectiles de enmigos de tipo 4
-  else if(tipo == 4)
+  else if(tipo >= 4)
   {
       float dist_x = x - centro.first;
       float dist_y = y - centro.second;
@@ -77,6 +82,10 @@ void Proyectil::dibujar()
   float x = centro.first, y = centro.second;
   glBegin(GL_QUADS);
   int factor=tipo-1;
+  if(tipo>4)
+  {
+    factor=0;
+  }
   glBegin(GL_QUADS);
   glTexCoord2f(0.25*factor,0);
   glVertex3f(x+radio_hitbox*3, y-radio_hitbox*3,-2); //bottom-right

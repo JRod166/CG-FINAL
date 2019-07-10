@@ -16,6 +16,7 @@ extern float level_it;
 extern long long phase;
 extern vector<Item> items;
 extern int cont_phase;
+extern float bool_it;
 
 extern void gen_meteor(pair<float, float> inicio, pair<float, float> final);
 extern void gen_meteor_rain(int meteors);
@@ -29,5 +30,7 @@ extern void go_zig_zag_hor(Enemigo &my_enemy, bool is_up, float hor, float ver);
 extern void massacre_mode(Enemigo &my_enemy); /// por corregir
 
 extern void nivel_1();
+extern void nivel_2();
+extern void nivel_3();
 
 #endif

@@ -10,6 +10,7 @@ Player::Player(float x, float y)
     vidas = 5;
     score = 0;
     disparo_upgrade = false;
+    bombs=2;
 }
 
 //Remueve todas las bonificaciones del jugador, se llama al morir
@@ -19,6 +20,7 @@ void Player::reset()
     centro.second = 0;
     radio_hitbox = 8;
     velocidad = 100;
+    disparo_upgrade=false;
 }
 
 //Funcion de movimiento del personaje del jugador

@@ -8,6 +8,7 @@ Enemigo::Enemigo(float x, float y, int type)
     centro.second = y;
     origen = centro;
     tipo = type;
+    e_state.second=rand()%8;
     r = 99;
     ii = 0; // ii is the pos of the enemy based on a circle
     if(tipo==2)
@@ -26,8 +27,8 @@ Enemigo::Enemigo(float x, float y, int type)
         vidas = 3;
     }
     else if(tipo == 5){
-      radio_hitbox = 15;
-      vidas = 5;
+      radio_hitbox = 30;
+      vidas = 800;
     }
     else if(tipo==10)
     {

@@ -12,6 +12,7 @@ public:
     int score;
     float velocidad;
     bool disparo_upgrade;
+    int bombs;
 
     Player(float pos_x, float pos_y);
     void reset();

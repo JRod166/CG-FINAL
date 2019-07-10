@@ -9,13 +9,15 @@ int reload_time = 0;
 float default_guided_lifetime = 30;
 
 sf::Sound shoot,destroy,gameOver,die,sound,itempick;
+sf::SoundBuffer shootbuffer,empty;
 bool up_pressed = false;
 bool down_pressed = false;
 bool left_pressed = false;
 bool right_pressed = false;
 bool fire_pressed = false;
-GLuint reimu,fairy,bullet,red,bg,meteor,item;
+GLuint reimu,fairy,bullet,red,bg,meteor,item,bomb;
 int reimustate=0;
+bool play_on=1;
 /*  0=static
 1=Shoot
 2=Left move
