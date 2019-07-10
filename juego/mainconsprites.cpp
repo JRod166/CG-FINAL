@@ -252,6 +252,15 @@ GLvoid callback_motion(int x, int y)
 int main(int argc, char **argv)
 {
   srand(time(NULL));
+  cout<<"Controles"<<endl;
+  cout<<"___________"<<endl;
+  cout<<"Flechas (arriba,abajo,izquierda y derecha) -> movimiento"<<endl;
+  cout<<"z -> disparar"<<endl;
+  cout<<"Barra espaciadora -> Bomba"<<endl;
+
+
+
+
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
@@ -643,8 +652,6 @@ GLvoid window_idle()
               mis_proyectiles.push_back(Proyectil(el_jugador->centro.first-15,el_jugador->centro.second,1));
               mis_proyectiles.push_back(Proyectil(el_jugador->centro.first+15,el_jugador->centro.second,1));
             }
-            reimustate=1;
-            reimu_time=14;
             reload_time = int(0.1/delay_time);
         }
     }
@@ -775,13 +782,13 @@ void aplicar_buff(int tipo)
     if(tipo==1)
     {
         el_jugador->vidas++;
-        cout<<"Vida extra:"<<el_jugador->vidas<<endl;
+        //cout<<"Vida extra:"<<el_jugador->vidas<<endl;
     }
     //mas velocidad
     else if(tipo==2)
     {
         el_jugador->velocidad = el_jugador->velocidad + 10;
-        cout<<"Velocidad mejorada"<<endl;
+        //cout<<"Velocidad mejorada"<<endl;
     }
     //evasion(hit_box reducido)
     else if(tipo==3)
@@ -796,11 +803,11 @@ void aplicar_buff(int tipo)
     else if(tipo==4)
     {
         el_jugador->disparo_upgrade = true;
-        cout<<"Disparo mejorado"<<endl;
+        //cout<<"Disparo mejorado"<<endl;
     }
     //atrapar un item aumenta la puntuacion
     el_jugador->score += 20;
-    cout<<"Score: "<<el_jugador->score<<endl;
+    //cout<<"Score: "<<el_jugador->score<<endl;
 }
 
 
@@ -815,7 +822,7 @@ void check_collisions()
 		if( distancia_entre_centros < (el_jugador->radio_hitbox + proyectiles_enemigos[i].radio_hitbox) )
 		{
 			el_jugador->vidas--; //el jugador pierde una vida
-			cout<<"El jugador ha perdido una vida porque le dio una bala."<<endl;
+			//cout<<"El jugador ha perdido una vida porque le dio una bala."<<endl;
       die.play();
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
 			mis_proyectiles.clear();
@@ -850,7 +857,7 @@ void check_collisions()
 		{
 			el_jugador->vidas--; //el jugador pierde una vida
       die.play();
-			cout<<"El jugador ha perdido una vida porque se choco con un enemigo."<<endl;
+			//cout<<"El jugador ha perdido una vida porque se choco con un enemigo."<<endl;
 			proyectiles_enemigos.clear(); //destruimos todos los proyectiles enemigos
 			mis_proyectiles.clear();
 			el_jugador->reset(); //el jugador regresa a su estado inicial
@@ -883,7 +890,7 @@ void check_dead_enemies()
 		if(enemigos[i].vidas <= 0)
 		{
 		  el_jugador->score += (enemigos[i].radio_hitbox * 10); //incrementa el score del jugador
-		  cout<<"Score: "<<el_jugador->score<<endl;
+		  //cout<<"Score: "<<el_jugador->score<<endl;
       if(rand()%10 == 0)
       {
         items.push_back(Item(enemigos[i].centro.first,enemigos[i].centro.second,(rand()%4)+1));
